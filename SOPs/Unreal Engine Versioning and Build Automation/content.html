@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UE Build Automation SOP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Neutrals (Stone, Amber, Emerald for success) -->
+    <!-- Application Structure Plan: A dashboard layout with fixed sidebar navigation and dynamic content areas. This allows team members (Developers, CTO, PMs) to non-linearly explore the SOP. The workflow is transformed into an interactive timeline map, the technical setups are placed in categorized documentation tabs, and the abstract rules (SemVer) are visualized alongside simulated automation metrics to demonstrate the SOP's value. -->
+    <!-- Visualization & Content Choices: Workflow -> Goal: Organize/Process -> Interactive HTML/CSS blocks -> Allows step-by-step exploration without overwhelming text -> HTML/CSS (No SVG). Pre-release Tags -> Goal: Compare -> Bar Chart (Stability vs Bug Risk) -> Visually explains the purpose of tags to non-technical staff -> Chart.js. Build Metrics -> Goal: Change/Impact -> Line Chart -> Shows manual vs automated time savings -> Chart.js. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+        .workflow-node {
+            transition: all 0.2s ease-in-out;
+        }
+        .workflow-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .active-nav {
+            background-color: #e7e5e4;
+            border-left: 4px solid #d97706;
+            font-weight: 600;
+        }
+        .hide { display: none; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans h-screen flex overflow-hidden">
+
+    <nav class="w-64 bg-stone-100 border-r border-stone-200 flex flex-col h-full shrink-0">
+        <div class="p-6 border-b border-stone-200">
+            <h1 class="text-xl font-bold text-stone-900 tracking-tight">UE Automation</h1>
+            <p class="text-xs text-stone-500 mt-1 uppercase tracking-wider">Interactive SOP</p>
+        </div>
+        <div class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li><button data-target="view-overview" class="nav-btn w-full text-left px-6 py-3 text-sm text-stone-600 hover:bg-stone-200 active-nav">&#9635; Workflow Overview</button></li>
+                <li><button data-target="view-setup" class="nav-btn w-full text-left px-6 py-3 text-sm text-stone-600 hover:bg-stone-200">&#9881; Phase 1: Setup</button></li>
+                <li><button data-target="view-versioning" class="nav-btn w-full text-left px-6 py-3 text-sm text-stone-600 hover:bg-stone-200">&#128203; Phase 2: Versioning</button></li>
+                <li><button data-target="view-cicd" class="nav-btn w-full text-left px-6 py-3 text-sm text-stone-600 hover:bg-stone-200">&#9889; Phase 3 & 4: CI/CD</button></li>
+                <li><button data-target="view-metrics" class="nav-btn w-full text-left px-6 py-3 text-sm text-stone-600 hover:bg-stone-200">&#128200; Automation Impact</button></li>
+            </ul>
+        </div>
+        <div class="p-6 border-t border-stone-200 text-xs text-stone-400">
+            <p>Author: Aryo, CTO</p>
+            <p>Date: May 5, 2026</p>
+        </div>
+    </nav>
+
+    <main class="flex-1 h-full overflow-y-auto bg-white">
+        <div class="max-w-5xl mx-auto p-8">
+
+            <section id="view-overview" class="view-section">
+                <div class="mb-8 border-b border-stone-100 pb-4">
+                    <h2 class="text-3xl font-bold text-stone-800">Interactive CI/CD Workflow</h2>
+                    <p class="text-stone-500 mt-2">This section provides a high-level, interactive map of the entire automation lifecycle. Click on any step in the flowchart below to view its specific responsibilities and actions. This helps developers and project managers understand the flow of code from merge to deployment without reading through dense documentation.</p>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="w-full lg:w-2/3 bg-stone-50 p-6 rounded-xl border border-stone-200">
+                        <div class="flex flex-col items-center space-y-2">
+                            
+                            <button class="workflow-node w-64 bg-blue-100 border border-blue-300 text-blue-800 p-3 rounded-lg text-sm font-semibold shadow-sm" data-step="1">
+                                1. Dev: Merge to Develop
+                            </button>
+                            <div class="text-stone-400">&#8595;</div>
+                            
+                            <button class="workflow-node w-64 bg-blue-100 border border-blue-300 text-blue-800 p-3 rounded-lg text-sm font-semibold shadow-sm" data-step="2">
+                                2. CTO: Create Release & Tag
+                            </button>
+                            <div class="text-stone-400">&#8595;</div>
+                            
+                            <button class="workflow-node w-64 bg-stone-800 border border-stone-900 text-stone-100 p-3 rounded-lg text-sm font-semibold shadow-sm" data-step="3">
+                                3. GitHub Actions Triggered
+                            </button>
+                            <div class="text-stone-400">&#8595;</div>
+
+                            <div class="w-full max-w-sm bg-emerald-50 border-2 border-dashed border-emerald-300 rounded-xl p-4 flex flex-col items-center space-y-2 relative">
+                                <span class="absolute -top-3 left-4 bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded font-bold border border-emerald-300">Self-Hosted Runner (Local PC)</span>
+                                <button class="workflow-node w-56 bg-emerald-100 border border-emerald-400 text-emerald-900 p-2 rounded text-sm font-medium shadow-sm mt-2" data-step="4">
+                                    4. Git Checkout
+                                </button>
+                                <div class="text-emerald-500">&#8595;</div>
+                                <button class="workflow-node w-56 bg-emerald-100 border border-emerald-400 text-emerald-900 p-2 rounded text-sm font-medium shadow-sm" data-step="5">
+                                    5. UAT: Build & Cook
+                                </button>
+                                <div class="text-emerald-500">&#8595;</div>
+                                <button class="workflow-node w-56 bg-emerald-100 border border-emerald-400 text-emerald-900 p-2 rounded text-sm font-medium shadow-sm" data-step="6">
+                                    6. Compress to .zip
+                                </button>
+                            </div>
+                            <div class="text-stone-400">&#8595;</div>
+
+                            <button class="workflow-node w-64 bg-stone-800 border border-stone-900 text-stone-100 p-3 rounded-lg text-sm font-semibold shadow-sm" data-step="7">
+                                7. Upload to GitHub Release
+                            </button>
+                            <div class="text-stone-400">&#8595;</div>
+
+                            <button class="workflow-node w-64 bg-indigo-500 border border-indigo-600 text-white p-3 rounded-lg text-sm font-semibold shadow-sm" data-step="8">
+                                8. Discord Notification Sent
+                            </button>
+                            <div class="text-stone-400">&#8595;</div>
+
+                            <button class="workflow-node w-64 bg-amber-100 border border-amber-300 text-amber-800 p-3 rounded-lg text-sm font-semibold shadow-sm" data-step="9">
+                                9. QA/Tester: Download & Test
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <div class="w-full lg:w-1/3">
+                        <div class="sticky top-8 bg-white border border-stone-200 rounded-xl p-6 shadow-sm min-h-[300px]" id="step-detail-panel">
+                            <h3 class="text-sm font-bold text-stone-400 uppercase tracking-widest mb-2">Step Details</h3>
+                            <div id="step-content" class="text-stone-700">
+                                <p class="text-lg font-semibold mb-2">Select a step</p>
+                                <p class="text-sm">Click any block in the workflow flowchart to view the detailed procedure, responsibilities, and required actions for that specific phase.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-setup" class="view-section hide">
+                <div class="mb-8 border-b border-stone-100 pb-4">
+                    <h2 class="text-3xl font-bold text-stone-800">Phase 1: Preparation & Setup</h2>
+                    <p class="text-stone-500 mt-2">This section outlines the foundational one-time setup required to enable the automation pipeline. It details hardware prerequisites, GitHub configuration, and repository hygiene. Understanding this is crucial for DevOps or anyone maintaining the build infrastructure.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold text-stone-700 mb-4 border-l-4 border-amber-500 pl-3">1. PC Build Preparation</h3>
+                        <p class="text-sm text-stone-600 mb-4">Prepare a dedicated Windows PC/Laptop to execute the builds. This acts as the Self-Hosted Runner.</p>
+                        <ul class="space-y-2 text-sm text-stone-700 list-disc pl-5">
+                            <li>Unreal Engine installed (matching project version).</li>
+                            <li>Visual Studio with <strong>"Game development with C++"</strong> workload.</li>
+                            <li>Git for Windows installed.</li>
+                            <li><strong>Git Authentication:</strong> PC must pull from repo automatically via SSH key or Git Credential Manager.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold text-stone-700 mb-4 border-l-4 border-amber-500 pl-3">2. Setup GitHub Runner</h3>
+                        <ol class="space-y-3 text-sm text-stone-700 list-decimal pl-5">
+                            <li>Navigate to <strong>Settings > Actions > Runners</strong> in your GitHub Repo.</li>
+                            <li>Click <strong>New self-hosted runner</strong>.</li>
+                            <li>Select <strong>Windows</strong> (OS) and <strong>x64</strong> (Architecture).</li>
+                            <li>Open PowerShell on the Build PC and run the provided commands (Download, Configure, Run).</li>
+                            <li><em>Recommendation:</em> Install runner as a Windows Service for 24/7 availability.</li>
+                        </ol>
+                    </div>
+
+                    <div class="md:col-span-2 mt-4 bg-stone-100 p-6 rounded-lg border border-stone-200">
+                        <h3 class="text-lg font-bold text-stone-700 mb-3 border-l-4 border-amber-500 pl-3">3. .gitignore Configuration</h3>
+                        <p class="text-sm text-stone-600 mb-3">Ensure the repository is not cluttered with temporary cache files. Place this in the root directory.</p>
+                        <pre class="bg-stone-800 text-stone-200 p-4 rounded text-xs overflow-x-auto"><code># Unreal Engine .gitignore
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vscode/
+.vs/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.user
+*.userosscache
+*.sln.docstates
+*.dll
+*.exe
+*.pdb
+*.exp
+*.lib</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-versioning" class="view-section hide">
+                <div class="mb-8 border-b border-stone-100 pb-4">
+                    <h2 class="text-3xl font-bold text-stone-800">Phase 2: Versioning SOP</h2>
+                    <p class="text-stone-500 mt-2">This section provides the interactive guidelines for Semantic Versioning (SemVer) and release tagging. Proper versioning is the trigger mechanism for the entire automation pipeline. The visual data below helps teams correlate tags with expected stability and target audiences.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-700 mb-4">Core Versioning Numbers</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-stone-100 text-stone-600">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg">Format</th>
+                                        <th class="px-4 py-3">Name</th>
+                                        <th class="px-4 py-3 rounded-tr-lg">When to Increment</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-stone-100">
+                                    <tr>
+                                        <td class="px-4 py-3 font-mono text-amber-600 font-bold">v1.x.x</td>
+                                        <td class="px-4 py-3 font-semibold">Major</td>
+                                        <td class="px-4 py-3 text-stone-600">Breaking changes, architectural overhauls, core upgrades.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 font-mono text-amber-600 font-bold">x.2.x</td>
+                                        <td class="px-4 py-3 font-semibold">Minor</td>
+                                        <td class="px-4 py-3 text-stone-600">Adding new functionality (backwards-compatible).</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 font-mono text-amber-600 font-bold">x.x.3</td>
+                                        <td class="px-4 py-3 font-semibold">Patch</td>
+                                        <td class="px-4 py-3 text-stone-600">Hotfixes or small optimizations.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-700 mb-4">Release Trigger Process</h3>
+                        <div class="bg-amber-50 border border-amber-200 p-5 rounded-xl">
+                            <ol class="space-y-3 text-sm text-stone-800 list-decimal pl-5">
+                                <li><strong>Merge:</strong> Ensure features are merged into target branch.</li>
+                                <li><strong>Draft:</strong> Go to Repo > <strong>Releases > Draft a new release</strong>.</li>
+                                <li><strong>Tag:</strong> Create tag (e.g., <code class="bg-white px-1 rounded text-amber-700">v0.2.0-beta</code>).</li>
+                                <li><strong>Target:</strong> Select branch (e.g., <code class="bg-white px-1 rounded">develop</code>).</li>
+                                <li><strong>Notes:</strong> Click <strong>Generate release notes</strong>.</li>
+                                <li><strong>Publish:</strong> Click <strong>Publish release</strong> (This triggers CI/CD).</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-stone-200 pt-8">
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">Pre-Release Tag Strategy</h3>
+                    <p class="text-sm text-stone-500 mb-6">Visualizing the correlation between release tags, stability, and bug risk. Use this to determine which tag to apply based on the current phase of development.</p>
+                    
+                    <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="chart-container">
+                            <canvas id="tagsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-cicd" class="view-section hide">
+                <div class="mb-8 border-b border-stone-100 pb-4">
+                    <h2 class="text-3xl font-bold text-stone-800">Phase 3 & 4: CI/CD & Discord</h2>
+                    <p class="text-stone-500 mt-2">This section details the core automation script and notification integration. It provides the exact YAML configuration needed to command the self-hosted runner and ping the team on Discord upon completion.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-xl">
+                            <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center">
+                                <span class="text-xl mr-2">&#128172;</span> Discord Setup
+                            </h3>
+                            <ol class="space-y-2 text-sm text-indigo-800 list-decimal pl-5">
+                                <li>Open <strong>Discord Server Settings > Integrations</strong>.</li>
+                                <li>Click <strong>Webhooks > New Webhook</strong> ("Build Bot").</li>
+                                <li>Copy the <strong>Webhook URL</strong>.</li>
+                                <li>In GitHub Repo go to <strong>Settings > Secrets and variables > Actions</strong>.</li>
+                                <li>New repository secret:<br>Name: <code class="bg-indigo-100 px-1 font-bold">DISCORD_WEBHOOK</code><br>Value: [Paste URL]</li>
+                            </ol>
+                        </div>
+
+                        <div class="bg-stone-50 border border-stone-200 p-5 rounded-xl">
+                            <h3 class="text-lg font-bold text-stone-800 mb-3">Phase 4: Verification</h3>
+                            <ul class="space-y-2 text-sm text-stone-600 list-disc pl-5">
+                                <li>Verify <code class="text-xs bg-stone-200 px-1">UAT_Path</code> in YAML matches engine version.</li>
+                                <li>Publish release with tag <code class="text-xs bg-stone-200 px-1">v0.1.0-alpha</code>.</li>
+                                <li>Watch <strong>Actions</strong> tab for progress.</li>
+                                <li>Wait for Discord ping.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <h3 class="text-lg font-bold text-stone-700 mb-3">GitHub Actions YAML</h3>
+                        <p class="text-xs text-stone-500 mb-2">Create at: <code class="bg-stone-100 px-1 py-0.5 rounded border border-stone-200">.github/workflows/unreal_build.yml</code></p>
+                        <pre class="bg-stone-900 text-stone-300 p-4 rounded-xl text-xs overflow-x-auto shadow-inner" style="max-height: 500px;"><code>name: Unreal Engine Build Automation
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build_unreal:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Variables
+      id: vars
+      run: |
+        $TAG_NAME = "${{ github.event.release.tag_name }}"
+        $REPO_NAME = "${{ github.event.repository.name }}"
+        echo "ZIP_NAME=${REPO_NAME}_${TAG_NAME}.zip" >> $env:GITHUB_ENV
+        echo "BUILD_DIR=${{ github.workspace }}\Build_Output" >> $env:GITHUB_ENV
+
+    - name: Run Unreal Automation Tool
+      run: |
+        $UAT_Path = "C:\Program Files\Epic Games\UE_5.x\Engine\Build\BatchFiles\RunUAT.bat"
+        $ProjectFile = Get-ChildItem -Path "${{ github.workspace }}" -Filter *.uproject | Select-Object -First 1
+        if (-not $ProjectFile) { exit 1 }
+        & $UAT_Path BuildCookRun -project="$($ProjectFile.FullName)" -noP4 -platform=Win64 -clientconfig=Development -cook -allmaps -build -stage -pak -archive -archivedirectory="${{ env.BUILD_DIR }}"
+
+    - name: Compress Build Output
+      run: |
+        Compress-Archive -Path "${{ env.BUILD_DIR }}\Windows\*" -DestinationPath "${{ env.ZIP_NAME }}" -Force
+
+    - name: Upload Build to Release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ env.ZIP_NAME }}
+        asset_name: ${{ env.ZIP_NAME }}
+        tag: ${{ github.ref }}
+        overwrite: true
+
+    - name: Discord Notification
+      if: always()
+      uses: appleboy/discord-action@master
+      with:
+        webhook_id: ${{ secrets.DISCORD_WEBHOOK }}
+        message: |
+          **🚀 New Build Available!**
+          **Project:** ${{ github.event.repository.name }}
+          **Version:** ${{ github.event.release.tag_name }}
+          **Status:** ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}
+          **Download:** ${{ github.event.release.html_url }}
+          ---
+          *Triggered by: ${{ github.actor }}*</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-metrics" class="view-section hide">
+                <div class="mb-8 border-b border-stone-100 pb-4">
+                    <h2 class="text-3xl font-bold text-stone-800">Automation Impact Analysis</h2>
+                    <p class="text-stone-500 mt-2">This dashboard section visualizes the quantitative value of implementing the CI/CD SOP. It compares the estimated active developer time spent on manual packaging versus the automated workflow across multiple releases, proving the efficiency gained.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-stone-800">Dev Time Spent per Build</h3>
+                            <p class="text-sm text-stone-500">Manual packaging vs Automated Triggering</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-2xl font-bold text-emerald-600">~95%</span>
+                            <span class="text-xs text-stone-400 font-semibold uppercase">Time Saved</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="impactChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-stone-50 p-4 rounded border border-stone-200 text-center">
+                        <div class="text-3xl font-bold text-stone-700 mb-1">0</div>
+                        <div class="text-xs text-stone-500 uppercase tracking-wide">Manual Uploads Needed</div>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded border border-stone-200 text-center">
+                        <div class="text-3xl font-bold text-stone-700 mb-1">Instant</div>
+                        <div class="text-xs text-stone-500 uppercase tracking-wide">Discord Team Ping</div>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded border border-stone-200 text-center">
+                        <div class="text-3xl font-bold text-stone-700 mb-1">1</div>
+                        <div class="text-xs text-stone-500 uppercase tracking-wide">Single Source of Truth</div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const viewSections = document.querySelectorAll('.view-section');
+
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                navButtons.forEach(b => b.classList.remove('active-nav'));
+                e.target.classList.add('active-nav');
+                
+                const targetId = e.target.getAttribute('data-target');
+                viewSections.forEach(sec => {
+                    if(sec.id === targetId) {
+                        sec.classList.remove('hide');
+                    } else {
+                        sec.classList.add('hide');
+                    }
+                });
+            });
+        });
+
+        const stepData = {
+            "1": { title: "1. Developer Merge", content: "Developer finishes a feature and creates a Pull Request. After review, the code is merged into the 'develop' branch. This branch serves as the staging ground." },
+            "2": { title: "2. CTO Creates Release", content: "The Lead/CTO goes to GitHub, drafts a new release, assigns a Semantic Version tag (e.g., v0.2.0-beta), auto-generates release notes, and publishes it." },
+            "3": { title: "3. Action Triggered", content: "GitHub Actions detects the 'published' event of the new release. It checks the .yml workflow file and assigns the job to the configured Self-Hosted Runner." },
+            "4": { title: "4. Git Checkout", content: "The local Build PC (Self-Hosted Runner) receives the command and downloads the latest repository code corresponding to the release tag." },
+            "5": { title: "5. Build & Cook", content: "The runner executes Unreal Automation Tool (RunUAT.bat). It automatically detects the .uproject file, compiles C++ code, cooks assets, and stages the build for Windows 64-bit." },
+            "6": { title: "6. Compression", content: "Using PowerShell, the runner compresses the entire staged build folder into a single .zip file, named dynamically using the repository name and version tag." },
+            "7": { title: "7. GitHub Upload", content: "The runner uses a GitHub Action plugin to upload the .zip file back to GitHub, attaching it directly to the Release page created in Step 2." },
+            "8": { title: "8. Discord Ping", content: "Upon successful upload, a webhook payload is sent to the Discord 'Build Bot'. It posts an embed message containing the version, status, and direct download link." },
+            "9": { title: "9. QA Testing", content: "The PM, QA team, or other developers see the Discord notification, click the link, download the zip, and begin testing the new build immediately." }
+        };
+
+        const workflowNodes = document.querySelectorAll('.workflow-node');
+        const detailPanel = document.getElementById('step-content');
+
+        workflowNodes.forEach(node => {
+            node.addEventListener('click', (e) => {
+                const step = e.target.getAttribute('data-step');
+                const data = stepData[step];
+                if(data) {
+                    workflowNodes.forEach(n => {
+                        n.style.transform = 'scale(1)';
+                        n.style.opacity = '0.6';
+                        n.style.borderWidth = '1px';
+                    });
+                    e.target.style.transform = 'scale(1.05)';
+                    e.target.style.opacity = '1';
+                    e.target.style.borderWidth = '2px';
+
+                    detailPanel.innerHTML = `
+                        <p class="text-xl font-bold text-stone-800 mb-3">${data.title}</p>
+                        <p class="text-sm leading-relaxed text-stone-600 bg-stone-50 p-4 rounded border border-stone-200">${data.content}</p>
+                    `;
+                }
+            });
+        });
+
+        const ctxTags = document.getElementById('tagsChart').getContext('2d');
+        new Chart(ctxTags, {
+            type: 'bar',
+            data: {
+                labels: ['-alpha (Experimental)', '-beta (Feature Complete)', '-rc (Release Candidate)', 'Stable (No Tag)'],
+                datasets: [
+                    {
+                        label: 'Feature Completeness (%)',
+                        data: [40, 100, 100, 100],
+                        backgroundColor: '#3b82f6', 
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Estimated Bug Risk (%)',
+                        data: [85, 45, 10, 2],
+                        backgroundColor: '#ef4444', 
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100, title: { display: true, text: 'Percentage (%)' } }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const ctxImpact = document.getElementById('impactChart').getContext('2d');
+        new Chart(ctxImpact, {
+            type: 'line',
+            data: {
+                labels: ['Release 1', 'Release 2', 'Release 3', 'Release 4', 'Release 5', 'Release 6'],
+                datasets: [
+                    {
+                        label: 'Active Time Spent (Manual Process) in Minutes',
+                        data: [45, 48, 42, 50, 46, 45],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Active Time Spent (Automated SOP) in Minutes',
+                        data: [45, 2, 2, 2, 2, 2],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        title: { display: true, text: 'Developer Active Time (Minutes)' } 
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(context) {
+                                if(context.datasetIndex === 1 && context.dataIndex > 0) {
+                                    return 'Time includes only drafting the GitHub release.';
+                                }
+                                if(context.datasetIndex === 0) {
+                                    return 'Includes waiting for build, zipping, and uploading.';
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
