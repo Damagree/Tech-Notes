@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOP Engine | Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --neon-cyan: #22d3ee;
+            --glass-bg: rgba(15, 23, 42, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: #020617;
+            background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+        }
+
+        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); }
+        
+        .sidebar-link.active {
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--neon-cyan);
+            border-right: 3px solid var(--neon-cyan);
+        }
+
+        .view-toggle.active {
+            background: var(--neon-cyan);
+            color: #020617;
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.3); border-radius: 10px; }
+
+        .swimlane-container { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; }
+        .swimlane-col { min-width: 280px; flex: 1; background: rgba(255,255,255,0.02); border-radius: 12px; padding: 1rem; border: 1px dashed rgba(255,255,255,0.1); }
+        
+        pre { font-family: 'JetBrains Mono', monospace; background: #010409 !important; }
+
+        /* Severity Colors */
+        .sev-low { color: #4ade80; background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); }
+        .sev-medium { color: #facc15; background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.2); }
+        .sev-high { color: #fb923c; background: rgba(251, 146, 60, 0.1); border: 1px solid rgba(251, 146, 60, 0.2); }
+        .sev-critical { color: #f87171; background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.2); animation: pulse-red 2s infinite; }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(248, 113, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+        }
+    </style>
+</head>
+<body class="h-screen flex">
+
+    <!-- SIDEBAR -->
+    <aside class="w-80 glass border-r flex flex-col z-20">
+        <div class="p-6 border-b border-white/10 flex items-center gap-3">
+            <div class="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <i data-lucide="cpu" class="w-6 h-6 text-slate-900"></i>
+            </div>
+            <div>
+                <h1 class="font-bold tracking-tight text-lg uppercase">Cube Core</h1>
+                <p class="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">CTO Operations Hub</p>
+            </div>
+        </div>
+
+        <div id="sidebar-nav" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-8 mt-4">
+            <!-- Sidebar content injected via JS -->
+        </div>
+
+        <div class="p-6 border-t border-white/10 flex justify-between items-center bg-black/20">
+            <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">CTO: ARYO</span>
+            <button class="text-slate-400 hover:text-white transition-colors"><i data-lucide="settings" class="w-4 h-4"></i></button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col relative overflow-hidden">
+        
+        <!-- HEADER -->
+        <header class="h-20 glass border-b px-8 flex items-center justify-between z-10">
+            <div id="header-info" class="flex items-center gap-6">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="flex bg-slate-950 p-1 rounded-xl border border-white/10 shadow-inner">
+                <button id="btn-web" onclick="setView('web')" class="view-toggle active flex items-center gap-2 px-6 py-2 rounded-lg text-xs font-bold transition-all">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i> INTERACTIVE
+                </button>
+                <button id="btn-pdf" onclick="setView('pdf')" class="view-toggle flex items-center gap-2 px-6 py-2 rounded-lg text-xs font-bold transition-all text-slate-500">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> SOURCE PDF
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTAINER -->
+        <div id="content-scroller" class="flex-1 overflow-y-auto p-10 custom-scrollbar">
+            <!-- WEB VIEW CONTAINER -->
+            <div id="view-web" class="max-w-5xl mx-auto pb-20">
+                <div id="sop-content-render" class="space-y-8">
+                    <!-- Konten HTML dari dalam folder akan di-inject ke sini -->
+                </div>
+            </div>
+
+            <!-- PDF VIEW CONTAINER -->
+            <div id="view-pdf" class="hidden h-full">
+                <iframe id="pdf-iframe" src="" class="w-full h-full rounded-xl border border-white/10 bg-slate-900 shadow-2xl"></iframe>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * REGISTER FOLDER SOP DI SINI
+         * Cukup tambahkan path folder tempat kamu menyimpan content.html dan document.pdf
+         */
+        const sopRegistry = {
+            "ue5": {
+                title: "CI/CD Unreal Engine 5",
+                category: "Engineering",
+                updated: "5 Mei 2026",
+                severity: "high",
+                folderPath: "SOPs/CI-CD Unreal Engine 5 Github" // <--- PATH FOLDER BARU
+            },
+        };
+
+        // RENDER ENGINE (Menggunakan Fetch API)
+        async function renderSOP(id) {
+            const data = sopRegistry[id];
+            const container = document.getElementById('sop-content-render');
+            const headerInfo = document.getElementById('header-info');
+            
+            // 1. Render Header
+            const sevLabels = {
+                low: { label: "Low Urgency", class: "sev-low" },
+                medium: { label: "Medium", class: "sev-medium" },
+                high: { label: "High Priority", class: "sev-high" },
+                critical: { label: "CRITICAL", class: "sev-critical" }
+            };
+            const sev = sevLabels[data.severity || 'low'];
+
+            headerInfo.innerHTML = `
+                <div>
+                    <h2 class="text-xl font-bold flex items-center gap-3">
+                        ${data.title}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${sev.class}">${sev.label}</span>
+                    </h2>
+                    <div class="flex items-center gap-4 mt-1 text-[10px] text-slate-400 font-medium">
+                        <span class="flex items-center gap-1 uppercase tracking-wider"><i data-lucide="folder" class="w-3 h-3 text-cyan-400"></i> ${data.category}</span>
+                        <span class="flex items-center gap-1 uppercase tracking-wider"><i data-lucide="calendar" class="w-3 h-3 text-slate-500"></i> ${data.updated}</span>
+                    </div>
+                </div>
+            `;
+
+            // 2. Load File PDF
+            document.getElementById('pdf-iframe').src = `${data.folderPath}/document.pdf`;
+
+            // 3. Load File HTML secara Dinamis
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20 text-slate-500">
+                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin mb-4 text-cyan-500"></i>
+                    <p class="text-sm">Loading Interactive Content...</p>
+                </div>
+            `;
+            lucide.createIcons();
+
+            try {
+                // Fetch file content.html dari folder
+                const response = await fetch(`${data.folderPath}/content.html`);
+                
+                if (!response.ok) {
+                    throw new Error(`File content.html tidak ditemukan di folder ${data.folderPath}`);
+                }
+                
+                const htmlContent = await response.text();
+                container.innerHTML = htmlContent; // Inject HTML ke dalam container
+                
+                // Re-init icons untuk icon yang ada di dalam content.html
+                lucide.createIcons(); 
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="glass p-6 rounded-xl border-red-500/30 bg-red-500/10 text-red-200">
+                        <h3 class="font-bold flex items-center gap-2 mb-2"><i data-lucide="alert-circle" class="w-5 h-5"></i> Gagal Memuat SOP</h3>
+                        <p class="text-sm opacity-80">${error.message}</p>
+                        <p class="text-xs mt-4 opacity-60">Pastikan kamu mengakses ini melalui Local Web Server (seperti VS Code Live Server) atau GitHub Pages, karena protokol file:// tidak diizinkan mengambil data eksternal oleh browser (CORS policy).</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+
+            // Reset View & Scroll
+            setView('web');
+            document.getElementById('content-scroller').scrollTop = 0;
+        }
+
+        function buildSidebar() {
+            const nav = document.getElementById('sidebar-nav');
+            const categories = [...new Set(Object.values(sopRegistry).map(s => s.category))];
+            
+            nav.innerHTML = categories.map(cat => `
+                <div>
+                    <p class="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-3 opacity-60">${cat}</p>
+                    <div class="space-y-1">
+                        ${Object.entries(sopRegistry)
+                            .filter(([id, data]) => data.category === cat)
+                            .map(([id, data]) => `
+                                <button onclick="switchActiveSOP('${id}')" id="btn-${id}" class="sidebar-link w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-all opacity-60 hover:opacity-100 group">
+                                    <i data-lucide="file-text" class="w-4 h-4 group-hover:text-cyan-400"></i>
+                                    <span class="font-medium text-left leading-tight">${data.title}</span>
+                                </button>
+                            `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        function switchActiveSOP(id) {
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active', 'opacity-100'));
+            const activeBtn = document.getElementById('btn-' + id);
+            if (activeBtn) activeBtn.classList.add('active', 'opacity-100');
+            renderSOP(id);
+        }
+
+        // ... existing view switch code ...
+        function setView(mode) {
+            const btnWeb = document.getElementById('btn-web');
+            const btnPdf = document.getElementById('btn-pdf');
+            const viewWeb = document.getElementById('view-web');
+            const viewPdf = document.getElementById('view-pdf');
+
+            if (mode === 'web') {
+                btnWeb.classList.add('active');
+                btnPdf.classList.remove('active');
+                viewWeb.classList.remove('hidden');
+                viewPdf.classList.add('hidden');
+            } else {
+                btnPdf.classList.add('active');
+                btnWeb.classList.remove('active');
+                viewPdf.classList.remove('hidden');
+                viewWeb.classList.add('hidden');
+            }
+        }
+
+        window.onload = () => {
+            buildSidebar();
+            // Default load item pertama di registry
+            const firstId = Object.keys(sopRegistry)[0];
+            if(firstId) switchActiveSOP(firstId);
+        };
+    </script>
+</body>
+</html>
