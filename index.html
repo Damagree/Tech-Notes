@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOP Engine | Command Center</title>
+    <title>SOP Engine | CTO Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -39,11 +39,6 @@
 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.3); border-radius: 10px; }
-
-        .swimlane-container { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; }
-        .swimlane-col { min-width: 280px; flex: 1; background: rgba(255,255,255,0.02); border-radius: 12px; padding: 1rem; border: 1px dashed rgba(255,255,255,0.1); }
-        
-        pre { font-family: 'JetBrains Mono', monospace; background: #010409 !important; }
 
         /* Severity Colors */
         .sev-low { color: #4ade80; background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); }
@@ -102,12 +97,10 @@
         </header>
 
         <!-- CONTAINER -->
-        <div id="content-scroller" class="flex-1 overflow-y-auto p-10 custom-scrollbar">
-            <!-- WEB VIEW CONTAINER -->
-            <div id="view-web" class="max-w-5xl mx-auto pb-20">
-                <div id="sop-content-render" class="space-y-8">
-                    <!-- Konten HTML dari dalam folder akan di-inject ke sini -->
-                </div>
+        <div class="flex-1 p-6">
+            <!-- WEB VIEW CONTAINER (Sekarang menggunakan Iframe agar Script JS jalan) -->
+            <div id="view-web" class="w-full h-full">
+                <iframe id="web-iframe" src="" class="w-full h-full rounded-xl border border-white/10 shadow-2xl bg-[#020617] overflow-hidden"></iframe>
             </div>
 
             <!-- PDF VIEW CONTAINER -->
@@ -118,27 +111,21 @@
     </main>
 
     <script>
-        /**
-         * REGISTER FOLDER SOP DI SINI
-         * Cukup tambahkan path folder tempat kamu menyimpan content.html dan document.pdf
-         */
         const sopRegistry = {
-            "ue5": {
+            "cicd-ue5": {
                 title: "CI/CD Unreal Engine 5",
                 category: "Engineering",
-                updated: "5 Mei 2026",
+                updated: "05 Mei 2026",
                 severity: "high",
-                folderPath: "SOPs/Unreal Engine Versioning and Build Automation" // <--- PATH FOLDER BARU
-            },
+                folderPath: "SOPs/CI-CD Unreal Engine 5 Github" // Pastikan folder ini ada!
+            }
         };
 
-        // RENDER ENGINE (Menggunakan Fetch API)
-        async function renderSOP(id) {
+        function renderSOP(id) {
             const data = sopRegistry[id];
-            const container = document.getElementById('sop-content-render');
             const headerInfo = document.getElementById('header-info');
             
-            // 1. Render Header
+            // 1. Render Header Info
             const sevLabels = {
                 low: { label: "Low Urgency", class: "sev-low" },
                 medium: { label: "Medium", class: "sev-medium" },
@@ -160,45 +147,12 @@
                 </div>
             `;
 
-            // 2. Load File PDF
+            // 2. Load Iframes (Ini solusi ampuh agar JS & Layout tidak bentrok)
             document.getElementById('pdf-iframe').src = `${data.folderPath}/document.pdf`;
+            document.getElementById('web-iframe').src = `${data.folderPath}/content.html`;
 
-            // 3. Load File HTML secara Dinamis
-            container.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-20 text-slate-500">
-                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin mb-4 text-cyan-500"></i>
-                    <p class="text-sm">Loading Interactive Content...</p>
-                </div>
-            `;
-            lucide.createIcons();
-
-            try {
-                // Fetch file content.html dari folder
-                const response = await fetch(`${data.folderPath}/content.html`);
-                
-                if (!response.ok) {
-                    throw new Error(`File content.html tidak ditemukan di folder ${data.folderPath}`);
-                }
-                
-                const htmlContent = await response.text();
-                container.innerHTML = htmlContent; // Inject HTML ke dalam container
-                
-                // Re-init icons untuk icon yang ada di dalam content.html
-                lucide.createIcons(); 
-            } catch (error) {
-                container.innerHTML = `
-                    <div class="glass p-6 rounded-xl border-red-500/30 bg-red-500/10 text-red-200">
-                        <h3 class="font-bold flex items-center gap-2 mb-2"><i data-lucide="alert-circle" class="w-5 h-5"></i> Gagal Memuat SOP</h3>
-                        <p class="text-sm opacity-80">${error.message}</p>
-                        <p class="text-xs mt-4 opacity-60">Pastikan kamu mengakses ini melalui Local Web Server (seperti VS Code Live Server) atau GitHub Pages, karena protokol file:// tidak diizinkan mengambil data eksternal oleh browser (CORS policy).</p>
-                    </div>
-                `;
-                lucide.createIcons();
-            }
-
-            // Reset View & Scroll
             setView('web');
-            document.getElementById('content-scroller').scrollTop = 0;
+            lucide.createIcons();
         }
 
         function buildSidebar() {
@@ -231,7 +185,6 @@
             renderSOP(id);
         }
 
-        // ... existing view switch code ...
         function setView(mode) {
             const btnWeb = document.getElementById('btn-web');
             const btnPdf = document.getElementById('btn-pdf');
@@ -253,7 +206,6 @@
 
         window.onload = () => {
             buildSidebar();
-            // Default load item pertama di registry
             const firstId = Object.keys(sopRegistry)[0];
             if(firstId) switchActiveSOP(firstId);
         };
