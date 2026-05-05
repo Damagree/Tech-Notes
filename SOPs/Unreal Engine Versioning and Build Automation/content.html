@@ -7,10 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Application Structure Plan: Refactored for Iframe Embedding. The layout is now a vertical flexbox. The left sidebar has been replaced with a sticky top horizontal navigation bar (glassmorphism) to prevent 'double sidebars' when loaded inside the user's Command Center wrapper. Extraneous header metadata was removed as the parent wrapper handles it. -->
-    <!-- Visualization & Content Choices: Workflow -> HTML/CSS Swimlane (No SVG). Metrics -> Chart.js Line Chart. Tags -> HTML Grid. All optimized for full-width display beneath a top nav. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
+    <!-- Application Structure Plan: Refactored to include Two-Pipeline Architecture (Manual Staging vs Auto Release). Enhanced the Setup section to be highly detailed for a CTO setting it up from scratch. Flowchart visualizes the branching paths. -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -20,9 +17,8 @@
             --glass-border: rgba(255, 255, 255, 0.05);
         }
 
-        /* Transparent background to blend slightly with the iframe's container if needed, though strictly colored here */
         body {
-            background-color: #020617; /* Diubah menjadi solid dark agar teks selalu terlihat */
+            background-color: #020617; 
             background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
             color: #f1f5f9;
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -31,11 +27,7 @@
 
         .glass { background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
         
-        /* Top Navigation Styles */
-        .nav-link { 
-            transition: all 0.2s ease; 
-            border: 1px solid transparent; 
-        }
+        .nav-link { transition: all 0.2s ease; border: 1px solid transparent; }
         .nav-link.active {
             background: rgba(34, 211, 238, 0.1);
             color: var(--neon-cyan);
@@ -48,14 +40,8 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.3); border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(34, 211, 238, 0.6); }
-        
-        pre { font-family: 'JetBrains Mono', monospace; background: #010409 !important; }
 
-        /* Severity Colors */
-        .sev-low { color: #4ade80; background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); }
-        .sev-medium { color: #facc15; background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.2); }
-        .sev-high { color: #fb923c; background: rgba(251, 146, 60, 0.1); border: 1px solid rgba(251, 146, 60, 0.2); }
-        .sev-critical { color: #f87171; background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.2); }
+        pre { font-family: 'JetBrains Mono', monospace; background: #010409 !important; }
 
         .hide { display: none; }
         .workflow-node { transition: all 0.2s; cursor: pointer; }
@@ -64,271 +50,351 @@
 </head>
 <body class="flex flex-col h-screen w-full">
 
-    <!-- FLOATING TOP NAVIGATION -->
-    <nav class="glass sticky top-0 z-50 w-full border-b border-white/10 px-6 py-3 flex gap-2 overflow-x-auto custom-scrollbar shadow-lg shadow-black/20">
-        <button data-target="view-overview" class="nav-link active px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Overview</button>
-        <button data-target="view-setup" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Ph 1: Setup</button>
-        <button data-target="view-versioning" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Ph 2: Versioning</button>
-        <button data-target="view-cicd" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Ph 3 & 4: CI/CD Script</button>
-        <button data-target="view-metrics" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Metrics</button>
+    <nav class="glass sticky top-0 z-50 w-full border-b border-white/10 px-6 py-3 flex gap-2 overflow-x-auto custom-scrollbar shadow-lg shadow-black/20 shrink-0">
+        <button data-target="view-overview" class="nav-link active px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Dual-Pipeline Flow</button>
+        <button data-target="view-setup" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">A-Z Setup Guide</button>
+        <button data-target="view-branching" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Git Branching</button>
+        <button data-target="view-scripts" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">YAML Scripts</button>
+        <button data-target="view-execute" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">How To Execute</button>
     </nav>
 
-    <!-- SCROLLABLE CONTENT AREA -->
     <main class="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
         <div class="max-w-6xl mx-auto">
 
-            <!-- OVERVIEW (SWIMLANE) -->
+            <!-- OVERVIEW: DUAL PIPELINE FLOWCHART -->
             <section id="view-overview" class="view-section">
                 <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Interactive Workflow</h2>
-                    <p class="text-slate-400 mt-2 text-sm">Klik blok pada flowchart di bawah ini untuk melihat detail tugas dari setiap tahap operasi CI/CD Unreal Engine.</p>
+                    <h2 class="text-2xl font-bold text-white">Dual-Pipeline Architecture</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Arsitektur ini memisahkan jalur <strong>Staging</strong> (Manual Trigger via tombol di GitHub) dan jalur <strong>Production</strong> (Auto Trigger via Release) untuk menghemat resource PC Build.</p>
                 </div>
 
                 <div class="flex flex-col lg:flex-row gap-8 mb-8">
-                    
-                    <!-- Flowchart Column -->
-                    <div class="flex-1 glass bg-white/5 py-8 px-4 rounded-xl border border-white/10 flex flex-col items-center justify-start overflow-y-auto custom-scrollbar" style="max-height: 60vh;">
+                    <!-- Flowchart Graphic -->
+                    <div class="flex-1 glass bg-white/5 py-8 px-4 rounded-xl border border-white/10 overflow-y-auto custom-scrollbar" style="max-height: 65vh;">
                         
-                        <div class="workflow-node w-64 bg-slate-800/80 border border-slate-600 text-center p-3 rounded-lg shadow-lg" data-step="1">
-                            <div class="text-[10px] text-cyan-400 font-mono mb-1">01. Dev</div>
-                            <div class="font-semibold text-sm text-white">Merge features to develop</div>
-                        </div>
-                        <div class="w-0.5 h-6 bg-slate-600"></div>
-                        
-                        <div class="workflow-node w-64 bg-slate-800/80 border border-slate-600 text-center p-3 rounded-lg shadow-lg" data-step="2">
-                            <div class="text-[10px] text-cyan-400 font-mono mb-1">02. Lead/CTO</div>
-                            <div class="font-semibold text-sm text-white">Create Release & Tag</div>
-                        </div>
-                        <div class="w-0.5 h-6 bg-slate-600"></div>
-                        
-                        <div class="workflow-node w-64 bg-[#24292e]/90 border border-slate-500 text-center p-3 rounded-lg shadow-lg" data-step="3">
-                            <div class="text-[10px] text-white font-mono mb-1">03. GitHub</div>
-                            <div class="font-semibold text-sm text-white">Actions Triggered</div>
-                        </div>
-                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <div class="flex flex-col items-center">
+                            <div class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded mb-4">START: Kode masuk ke GitHub</div>
+                            
+                            <!-- Branching Point -->
+                            <div class="flex justify-center w-full max-w-2xl relative mb-4">
+                                <div class="absolute top-0 w-1/2 h-8 border-t-2 border-l-2 border-r-2 border-slate-600 border-dashed"></div>
+                            </div>
+                            
+                            <!-- Two Columns -->
+                            <div class="flex w-full max-w-2xl justify-between">
+                                
+                                <!-- PATH A: STAGING -->
+                                <div class="flex flex-col items-center w-[45%]">
+                                    <div class="text-xs font-bold text-amber-400 mb-2 uppercase tracking-widest">Path A: Staging/Dev</div>
+                                    <div class="workflow-node w-full bg-amber-900/40 border border-amber-700 text-center p-3 rounded-lg shadow-lg mb-4" data-step="a1">
+                                        <div class="text-[10px] text-amber-400 font-mono mb-1">Trigger</div>
+                                        <div class="font-semibold text-sm text-white">Klik "Run Workflow"</div>
+                                    </div>
+                                    <div class="w-0.5 h-6 bg-slate-600 mb-4"></div>
+                                    <div class="workflow-node w-full bg-cyan-900/40 border border-cyan-700 text-center p-3 rounded-lg shadow-lg mb-4" data-step="a2">
+                                        <div class="text-[10px] text-cyan-400 font-mono mb-1">Runner PC</div>
+                                        <div class="font-semibold text-sm text-white">Checkout & Build UE5</div>
+                                    </div>
+                                    <div class="w-0.5 h-6 bg-slate-600 mb-4"></div>
+                                    <div class="workflow-node w-full bg-slate-800 border border-slate-600 text-center p-3 rounded-lg shadow-lg mb-4" data-step="a3">
+                                        <div class="text-[10px] text-slate-400 font-mono mb-1">Result</div>
+                                        <div class="font-semibold text-sm text-white">Save as Action Artifact</div>
+                                    </div>
+                                </div>
 
-                        <!-- Local Runner PC Box -->
-                        <div class="w-full max-w-sm border-2 border-dashed border-cyan-800 bg-cyan-950/20 rounded-xl p-6 flex flex-col items-center relative my-2">
-                            <span class="absolute -top-3 bg-[#020617] px-3 text-[10px] font-bold text-cyan-400 tracking-widest border border-cyan-800 rounded-full">LOCAL RUNNER PC</span>
-                            
-                            <div class="workflow-node w-56 bg-cyan-900/40 border border-cyan-700 text-center p-3 rounded-lg shadow-lg" data-step="4">
-                                <div class="text-[10px] text-cyan-300 font-mono mb-1">04. Pull</div>
-                                <div class="font-semibold text-sm text-white">Git Checkout tag</div>
+                                <!-- PATH B: PRODUCTION -->
+                                <div class="flex flex-col items-center w-[45%]">
+                                    <div class="text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest">Path B: Production</div>
+                                    <div class="workflow-node w-full bg-emerald-900/40 border border-emerald-700 text-center p-3 rounded-lg shadow-lg mb-4" data-step="b1">
+                                        <div class="text-[10px] text-emerald-400 font-mono mb-1">Trigger</div>
+                                        <div class="font-semibold text-sm text-white">Publish "Release"</div>
+                                    </div>
+                                    <div class="w-0.5 h-6 bg-slate-600 mb-4"></div>
+                                    <div class="workflow-node w-full bg-cyan-900/40 border border-cyan-700 text-center p-3 rounded-lg shadow-lg mb-4" data-step="b2">
+                                        <div class="text-[10px] text-cyan-400 font-mono mb-1">Runner PC</div>
+                                        <div class="font-semibold text-sm text-white">Checkout & Build UE5</div>
+                                    </div>
+                                    <div class="w-0.5 h-6 bg-slate-600 mb-4"></div>
+                                    <div class="workflow-node w-full bg-[#24292e]/90 border border-slate-500 text-center p-3 rounded-lg shadow-lg mb-4" data-step="b3">
+                                        <div class="text-[10px] text-slate-400 font-mono mb-1">Result</div>
+                                        <div class="font-semibold text-sm text-white">Attach .zip to Release Page</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="w-0.5 h-6 bg-cyan-800"></div>
                             
-                            <div class="workflow-node w-56 bg-cyan-900/40 border border-cyan-700 text-center p-3 rounded-lg shadow-lg" data-step="5">
-                                <div class="text-[10px] text-cyan-300 font-mono mb-1">05. Engine</div>
-                                <div class="font-semibold text-sm text-white">UAT: Build & Cook</div>
-                            </div>
-                            <div class="w-0.5 h-6 bg-cyan-800"></div>
-                            
-                            <div class="workflow-node w-56 bg-cyan-900/40 border border-cyan-700 text-center p-3 rounded-lg shadow-lg" data-step="6">
-                                <div class="text-[10px] text-cyan-300 font-mono mb-1">06. Package</div>
-                                <div class="font-semibold text-sm text-white">Compress to .zip</div>
+                            <!-- Merged End -->
+                            <div class="w-0.5 h-6 bg-slate-600"></div>
+                            <div class="workflow-node w-64 bg-[#5865F2]/20 border border-[#5865F2]/50 text-center p-3 rounded-lg shadow-lg" data-step="end">
+                                <div class="text-[10px] text-[#5865F2] font-mono mb-1">Discord Bot</div>
+                                <div class="font-semibold text-sm text-white">Broadcast Notification</div>
                             </div>
                         </div>
-                        
-                        <div class="w-0.5 h-6 bg-slate-600"></div>
-                        
-                        <div class="workflow-node w-64 bg-[#24292e]/90 border border-slate-500 text-center p-3 rounded-lg shadow-lg" data-step="7">
-                            <div class="text-[10px] text-white font-mono mb-1">07. GitHub</div>
-                            <div class="font-semibold text-sm text-white">Upload .zip to Release</div>
-                        </div>
-                        <div class="w-0.5 h-6 bg-slate-600"></div>
-                        
-                        <div class="workflow-node w-64 bg-[#5865F2]/20 border border-[#5865F2]/50 text-center p-3 rounded-lg shadow-lg" data-step="8">
-                            <div class="text-[10px] text-[#5865F2] font-mono mb-1">08. Discord</div>
-                            <div class="font-semibold text-sm text-white">Notification Sent</div>
-                        </div>
-                        <div class="w-0.5 h-6 bg-slate-600"></div>
-                        
-                        <div class="workflow-node w-64 bg-amber-500/20 border border-amber-500/50 text-center p-3 rounded-lg shadow-lg" data-step="9">
-                            <div class="text-[10px] text-amber-400 font-mono mb-1">09. QA/Tester</div>
-                            <div class="font-semibold text-sm text-white">Download & Test</div>
-                        </div>
-
                     </div>
 
-                    <!-- Detail Panel Column -->
+                    <!-- Detail Panel -->
                     <div class="lg:w-1/3">
                         <div class="glass rounded-xl p-6 shadow-lg border border-white/10 bg-white/5 sticky top-0">
-                            <h3 class="text-xs font-bold text-cyan-500 uppercase tracking-widest mb-4">Step Information Log</h3>
+                            <h3 class="text-xs font-bold text-cyan-500 uppercase tracking-widest mb-4">Log Analisis</h3>
                             <div id="step-content" class="text-slate-300 min-h-[150px]">
-                                <p class="text-lg font-semibold mb-2 text-white">System Standby</p>
-                                <p class="text-sm font-mono text-slate-500">> Select a node from the flowchart to retrieve operational details...</p>
+                                <p class="text-lg font-semibold mb-2 text-white">Menunggu Input...</p>
+                                <p class="text-sm font-mono text-slate-500">> Klik modul pada diagram di samping untuk melihat detail logika operasional.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- SETUP SECTION -->
+            <!-- A-Z SETUP SECTION -->
             <section id="view-setup" class="view-section hide">
                 <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Phase 1: Setup Infrastructure</h2>
-                    <p class="text-slate-400 mt-2 text-sm">Konfigurasi PC lokal (Self-Hosted Runner) dan kebersihan repositori GitHub. (Dilakukan 1 kali di awal project).</p>
+                    <h2 class="text-2xl font-bold text-white">Panduan Setup (Zero to Hero)</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Langkah teknis mendetail yang harus dilakukan di awal proyek. Lakukan secara berurutan.</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div class="space-y-6">
+                    <!-- Step 1 -->
                     <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-cyan-500">
-                        <h3 class="text-lg font-bold text-white mb-4">1. Build PC Prep</h3>
-                        <ul class="space-y-3 text-sm text-slate-300 list-disc pl-5">
-                            <li>Unreal Engine installed (matching project version).</li>
-                            <li>Visual Studio with <span class="text-cyan-400">Game development with C++</span> workload.</li>
-                            <li>Git for Windows with SSH Key configured (Auto-pull enabled).</li>
-                            <li><strong>GitHub Runner:</strong> Register in Settings > Actions > Runners > New self-hosted runner (Windows).</li>
+                        <h3 class="text-lg font-bold text-white mb-2">1. Persiapan PC Runner (Mesin Lokal)</h3>
+                        <p class="text-xs text-slate-400 mb-4">Siapkan PC khusus di studio. Jangan pakai PC yang sedang digunakan *artist/programmer* aktif.</p>
+                        <ol class="space-y-2 text-sm text-slate-300 list-decimal pl-5 bg-black/30 p-4 rounded-lg">
+                            <li>Install <strong>Unreal Engine</strong> (Versi harus sama persis dengan project).</li>
+                            <li>Install <strong>Visual Studio 2022</strong> (Pilih workload "Game development with C++" saat instalasi).</li>
+                            <li>Install <strong>Git for Windows</strong>.</li>
+                            <li>Buka Git Bash / PowerShell, pastikan akun GitHub sudah *login* (via SSH/Credential Manager) agar PC bisa `git pull` tanpa minta password terus.</li>
+                        </ol>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-cyan-500">
+                        <h3 class="text-lg font-bold text-white mb-2">2. Daftarkan PC ke GitHub (Self-Hosted Runner)</h3>
+                        <p class="text-xs text-slate-400 mb-4">Menghubungkan GitHub dengan PC lokal agar GitHub bisa memberi perintah "Mulai Build".</p>
+                        <ol class="space-y-2 text-sm text-slate-300 list-decimal pl-5 bg-black/30 p-4 rounded-lg">
+                            <li>Buka Repository GitHub > <strong>Settings</strong> > <strong>Actions</strong> > <strong>Runners</strong> (di menu kiri bawah).</li>
+                            <li>Klik tombol hijau <strong>New self-hosted runner</strong>. Pilih OS Windows.</li>
+                            <li>Buka <strong>PowerShell</strong> di PC Runner. <em>Copy-paste</em> block kode yang diberikan GitHub ke PowerShell satu per satu.</li>
+                            <li>Saat Configure minta nama, ketik misal: <code class="text-cyan-400">Studio-Build-PC</code>.</li>
+                            <li><strong>PENTING:</strong> Saat ditanya "run as service", ketik <strong>Y</strong>. (Agar runner nyala otomatis tiap PC dihidupkan).</li>
+                        </ol>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-[#5865F2]">
+                        <h3 class="text-lg font-bold text-white mb-2">3. Pasang Discord Webhook</h3>
+                        <p class="text-xs text-slate-400 mb-4">Agar tim dapat notifikasi otomatis di Discord jika build selesai.</p>
+                        <ol class="space-y-2 text-sm text-slate-300 list-decimal pl-5 bg-black/30 p-4 rounded-lg">
+                            <li>Di Discord Server, klik Edit Channel > <strong>Integrations</strong> > <strong>Webhooks</strong> > New Webhook. Copy URL-nya.</li>
+                            <li>Kembali ke GitHub Repo > <strong>Settings</strong> > <strong>Secrets and variables</strong> > <strong>Actions</strong>.</li>
+                            <li>Klik <strong>New repository secret</strong>.</li>
+                            <li>Isi Name dengan <code class="font-bold text-white">DISCORD_WEBHOOK</code>, lalu Paste URL Discord di kolom Secret. Save.</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BRANCHING STANDARD SECTION -->
+            <section id="view-branching" class="view-section hide">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Git Branching Standard</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Standar penamaan dan peruntukan cabang (branch) repository untuk menjaga integritas kode dan mencegah bentrok CI/CD.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- MAIN -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border border-emerald-500/30 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">Production</div>
+                        <h3 class="text-lg font-bold text-emerald-400 mb-2 font-mono">main / master</h3>
+                        <p class="text-xs text-slate-300 mb-3">Cabang paling krusial. Berisi kode yang 100% stabil dan siap rilis ke publik.</p>
+                        <ul class="text-xs text-slate-400 list-disc pl-4 space-y-1">
+                            <li><strong>Status:</strong> Protected Branch.</li>
+                            <li><strong>Larangan:</strong> Dilarang commit langsung ke cabang ini!</li>
+                            <li><strong>Aksi:</strong> Hanya menerima Pull Request (PR) dari <code class="text-emerald-200 bg-black/40 px-1 rounded">staging</code> atau hotfix.</li>
+                            <li><strong>CI/CD Trigger:</strong> Memicu <strong>Auto Production Build</strong> jika diberi Tag Release.</li>
                         </ul>
                     </div>
-                    <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-cyan-500">
-                        <h3 class="text-lg font-bold text-white mb-4">2. .gitignore Rules</h3>
-                        <p class="text-xs text-slate-400 mb-3">Wajib diletakkan di root project untuk mencegah cache engine terupload.</p>
-                        <pre class="text-cyan-300 p-4 rounded-lg text-xs overflow-x-auto border border-white/5"><code>Binaries/
-Build/
-DerivedDataCache/
-Intermediate/
-Saved/
-.vscode/
-.vs/
-*.sln
-*.suo</code></pre>
+
+                    <!-- STAGING -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border border-cyan-500/30 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">Integration</div>
+                        <h3 class="text-lg font-bold text-cyan-400 mb-2 font-mono">staging / develop</h3>
+                        <p class="text-xs text-slate-300 mb-3">Pusat integrasi kode harian. Tempat berkumpulnya fitur dari berbagai programmer.</p>
+                        <ul class="text-xs text-slate-400 list-disc pl-4 space-y-1">
+                            <li><strong>Status:</strong> Default Working Branch.</li>
+                            <li><strong>Aksi:</strong> Area bagi QA Tester untuk mencoba fitur yang baru digabungkan.</li>
+                            <li><strong>CI/CD Trigger:</strong> Target utama untuk dibuild menggunakan tombol <strong>Manual Staging Build</strong>.</li>
+                        </ul>
+                    </div>
+
+                    <!-- FEATURE -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border border-amber-500/30">
+                        <h3 class="text-lg font-bold text-amber-400 mb-2 font-mono">feature/*</h3>
+                        <p class="text-xs text-slate-300 mb-3">Cabang tempat programmer bekerja sehari-hari (contoh: <code class="text-amber-200 bg-black/40 px-1 rounded">feature/inventory</code>).</p>
+                        <ul class="text-xs text-slate-400 list-disc pl-4 space-y-1">
+                            <li><strong>Aturan:</strong> Selalu dibuat bercabang dari <code class="text-amber-200 bg-black/40 px-1 rounded">staging</code>.</li>
+                            <li><strong>Akhir:</strong> Setelah fitur selesai, programmer membuat Pull Request untuk menggabungkannya kembali ke <code class="text-amber-200 bg-black/40 px-1 rounded">staging</code>.</li>
+                        </ul>
+                    </div>
+
+                    <!-- HOTFIX -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border border-red-500/30">
+                        <h3 class="text-lg font-bold text-red-400 mb-2 font-mono">hotfix/*</h3>
+                        <p class="text-xs text-slate-300 mb-3">Cabang darurat untuk memperbaiki bug kritis di versi rilis / production.</p>
+                        <ul class="text-xs text-slate-400 list-disc pl-4 space-y-1">
+                            <li><strong>Aturan:</strong> Dibuat bercabang langsung dari <code class="text-red-200 bg-black/40 px-1 rounded">main</code>.</li>
+                            <li><strong>Akhir:</strong> Setelah fix selesai, Wajib di-merge kembali ke <code class="text-red-200 bg-black/40 px-1 rounded">main</code> <strong>DAN</strong> ke <code class="text-red-200 bg-black/40 px-1 rounded">staging</code> agar bug tidak terulang.</li>
+                        </ul>
                     </div>
                 </div>
             </section>
 
-            <!-- VERSIONING -->
-            <section id="view-versioning" class="view-section hide">
+            <!-- YAML SCRIPTS SECTION -->
+            <section id="view-scripts" class="view-section hide">
                 <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Phase 2: Semantic Versioning</h2>
-                    <p class="text-slate-400 mt-2 text-sm">Standar penamaan versi dan penggunaan pre-release tags untuk identifikasi resiko *bug*.</p>
+                    <h2 class="text-2xl font-bold text-white">Pipeline Scripts (YAML)</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Buat kedua file ini di PC kamu lalu push ke GitHub. Simpan di dalam folder <code class="bg-black/50 px-2 py-1 rounded">.github/workflows/</code>.</p>
                 </div>
                 
-                <div class="glass bg-white/5 p-6 rounded-xl mb-8 overflow-hidden">
-                    <h3 class="text-sm font-bold text-cyan-500 uppercase tracking-widest mb-4">Version Numbering Rules</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-slate-300">
-                            <thead class="bg-black/20 text-cyan-400 border-b border-white/10">
-                                <tr><th class="px-4 py-4">Format</th><th class="px-4 py-4">Type</th><th class="px-4 py-4">When to Increment</th></tr>
-                            </thead>
-                            <tbody class="divide-y divide-white/5">
-                                <tr class="hover:bg-white/5 transition-colors"><td class="px-4 py-4 font-mono font-bold text-white">v1.x.x</td><td>Major</td><td>Breaking API changes, major engine version upgrades.</td></tr>
-                                <tr class="hover:bg-white/5 transition-colors"><td class="px-4 py-4 font-mono font-bold text-white">x.2.x</td><td>Minor</td><td>Adding new functionality that doesn't break existing builds.</td></tr>
-                                <tr class="hover:bg-white/5 transition-colors"><td class="px-4 py-4 font-mono font-bold text-white">x.x.3</td><td>Patch</td><td>Small bug fixes, hotfixes, or optimizations.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <!-- Script 1 -->
+                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[600px]">
+                        <h3 class="text-md font-bold text-amber-400 mb-1">1. build_staging.yml</h3>
+                        <p class="text-xs text-slate-400 mb-4">Jalur Manual (Menggunakan workflow_dispatch). Simpan hasil sebagai Artifact.</p>
+                        <pre class="flex-1 text-cyan-300 p-4 rounded-lg text-xs overflow-auto custom-scrollbar border border-white/5"><code>name: MANUAL BUILD - Staging/Dev
+on:
+  workflow_dispatch:
+    inputs:
+      branch_target:
+        description: 'Branch to build (e.g., staging)'
+        required: true
+        default: 'staging'
 
-                <div class="glass bg-white/5 p-6 rounded-xl overflow-hidden">
-                    <h3 class="text-sm font-bold text-cyan-500 uppercase tracking-widest mb-4">Pre-Release Tags Strategy</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-black/20 p-4 rounded-lg border border-white/5 text-center">
-                            <span class="sev-critical px-2 py-1 rounded text-xs font-bold mb-3 inline-block">-alpha</span>
-                            <p class="text-xs text-slate-400">Experimental. Fitur baru, resiko bug sangat tinggi. Internal Devs.</p>
-                        </div>
-                        <div class="bg-black/20 p-4 rounded-lg border border-white/5 text-center">
-                            <span class="sev-high px-2 py-1 rounded text-xs font-bold mb-3 inline-block">-beta</span>
-                            <p class="text-xs text-slate-400">Feature complete. Fokus ke pengujian stabilitas. Internal/External QA.</p>
-                        </div>
-                        <div class="bg-black/20 p-4 rounded-lg border border-white/5 text-center">
-                            <span class="sev-medium px-2 py-1 rounded text-xs font-bold mb-3 inline-block">-rc</span>
-                            <p class="text-xs text-slate-400">Release Candidate. Diyakini stabil, pending final sign-off Stakeholders.</p>
-                        </div>
-                        <div class="bg-black/20 p-4 rounded-lg border border-white/5 text-center">
-                            <span class="sev-low px-2 py-1 rounded text-xs font-bold mb-3 inline-block">Stable (None)</span>
-                            <p class="text-xs text-slate-400">Production-ready. Siap diluncurkan ke Client / End User.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+jobs:
+  build_staging:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch_target }}
 
-            <!-- CI/CD SCRIPT -->
-            <section id="view-cicd" class="view-section hide">
-                <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Phase 3 & 4: Automation Scripting</h2>
-                    <p class="text-slate-400 mt-2 text-sm">Integrasi Discord Webhook dan *blueprint* skrip GitHub Actions YAML untuk *runner*.</p>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 space-y-6">
-                        <div class="glass bg-white/5 p-5 rounded-xl border border-[#5865F2]/30">
-                            <h3 class="text-md font-bold text-[#5865F2] mb-3 flex items-center gap-2">Discord Secret</h3>
-                            <p class="text-xs text-slate-400 mb-3 leading-relaxed">Masuk ke pengaturan channel Discord > Integrations > Webhooks. Salin URL-nya dan masukkan ke GitHub Repository Settings > Secrets and variables > Actions.</p>
-                            <code class="block bg-black/50 text-cyan-300 p-3 rounded-lg text-xs font-mono border border-white/5 break-all">Name: DISCORD_WEBHOOK</code>
-                        </div>
+      - name: Setup Variables
+        run: |
+          $DATE_STR = Get-Date -Format "yyyyMMdd-HHmm"
+          $REPO_NAME = "${{ github.event.repository.name }}"
+          echo "ZIP_NAME=${REPO_NAME}_Stg_${DATE_STR}.zip" >> $env:GITHUB_ENV
+          echo "BUILD_DIR=${{ github.workspace }}\Build_Output" >> $env:GITHUB_ENV
 
-                        <div class="glass bg-white/5 p-5 rounded-xl border border-amber-500/30">
-                            <h3 class="text-md font-bold text-amber-400 mb-3 flex items-center gap-2">Script Verification</h3>
-                            <ul class="text-xs text-slate-400 space-y-2 list-disc pl-4">
-                                <li>Pastikan variabel <code class="text-amber-200 bg-black/40 px-1 rounded">$UAT_Path</code> mengarah tepat ke lokasi instalasi Unreal Engine di PC lokal.</li>
-                                <li>Ubah `UE_5.3` pada skrip menjadi versi spesifik (misal 5.4) jika baru saja update engine.</li>
-                            </ul>
-                        </div>
+      - name: UAT Build
+        run: |
+          $UAT_Path = "C:\Program Files\Epic Games\UE_5.3\Engine\Build\BatchFiles\RunUAT.bat"
+          $ProjectFile = Get-ChildItem -Path "${{ github.workspace }}" -Filter *.uproject | Select-Object -First 1
+          & $UAT_Path BuildCookRun -project="$($ProjectFile.FullName)" -noP4 -platform=Win64 -clientconfig=Development -cook -allmaps -build -stage -pak -archive -archivedirectory="${{ env.BUILD_DIR }}"
+
+      - name: Compress
+        run: Compress-Archive -Path "${{ env.BUILD_DIR }}\Windows\*" -DestinationPath "${{ env.ZIP_NAME }}" -Force
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_NAME }}
+          retention-days: 7
+
+      - name: Notify
+        if: always()
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK }}
+          message: "**🛠️ STAGING BUILD Selesai!**\nBranch: ${{ github.event.inputs.branch_target }}\nCek tab Actions GitHub untuk download."</code></pre>
                     </div>
 
-                    <div class="lg:col-span-2 glass bg-white/5 p-6 rounded-xl">
-                        <h3 class="text-sm font-bold text-cyan-500 uppercase tracking-widest mb-4">.github/workflows/unreal_build.yml</h3>
-                        <pre class="text-cyan-300 p-5 rounded-lg text-xs overflow-y-auto custom-scrollbar border border-white/5 h-[400px]"><code>name: Unreal Engine Build Automation
+                    <!-- Script 2 -->
+                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[600px]">
+                        <h3 class="text-md font-bold text-emerald-400 mb-1">2. build_production.yml</h3>
+                        <p class="text-xs text-slate-400 mb-4">Jalur Otomatis (Terpicu saat buat Release). Nempel zip ke halaman rilis.</p>
+                        <pre class="flex-1 text-emerald-300 p-4 rounded-lg text-xs overflow-auto custom-scrollbar border border-white/5"><code>name: AUTO BUILD - Official Release
 on:
   release:
     types: [published]
 
 jobs:
-  build_unreal:
+  build_prod:
     runs-on: self-hosted
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build & Cook (UAT)
+      - name: Setup Variables
+        run: |
+          $TAG_NAME = "${{ github.event.release.tag_name }}"
+          $REPO_NAME = "${{ github.event.repository.name }}"
+          echo "ZIP_NAME=${REPO_NAME}_${TAG_NAME}.zip" >> $env:GITHUB_ENV
+          echo "BUILD_DIR=${{ github.workspace }}\Build_Output" >> $env:GITHUB_ENV
+
+      - name: UAT Build
         run: |
           $UAT_Path = "C:\Program Files\Epic Games\UE_5.3\Engine\Build\BatchFiles\RunUAT.bat"
           $ProjectFile = Get-ChildItem -Path "${{ github.workspace }}" -Filter *.uproject | Select-Object -First 1
-          if (-not $ProjectFile) { throw "No .uproject file found!" }
-          & $UAT_Path BuildCookRun -project="$($ProjectFile.FullName)" -noP4 -platform=Win64 -clientconfig=Development -cook -allmaps -build -stage -pak -archive -archivedirectory="${{ github.workspace }}\Build_Output"
+          & $UAT_Path BuildCookRun -project="$($ProjectFile.FullName)" -noP4 -platform=Win64 -clientconfig=Shipping -cook -allmaps -build -stage -pak -archive -archivedirectory="${{ env.BUILD_DIR }}"
 
-      - name: Compress Build
-        run: Compress-Archive -Path "${{ github.workspace }}\Build_Output\Windows\*" -DestinationPath "Build.zip" -Force
+      - name: Compress
+        run: Compress-Archive -Path "${{ env.BUILD_DIR }}\Windows\*" -DestinationPath "${{ env.ZIP_NAME }}" -Force
 
       - name: Upload to Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: Build.zip
-          asset_name: Build.zip
+          file: ${{ env.ZIP_NAME }}
+          asset_name: ${{ env.ZIP_NAME }}
           tag: ${{ github.ref }}
           overwrite: true
 
-      - name: Notify Discord
+      - name: Notify
         if: always()
         uses: appleboy/discord-action@master
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK }}
-          message: "**🚀 Build Complete!**\nStatus: ${{ job.status }}\nDownload: ${{ github.event.release.html_url }}"</code></pre>
+          message: "**🚀 RELEASE Selesai!**\nVersi: ${{ github.event.release.tag_name }}\nLink: ${{ github.event.release.html_url }}"</code></pre>
                     </div>
                 </div>
             </section>
 
-            <!-- METRICS -->
-            <section id="view-metrics" class="view-section hide">
+            <!-- EXECUTION GUIDE -->
+            <section id="view-execute" class="view-section hide">
                 <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-white">Automation Impact Analysis</h2>
-                    <p class="text-slate-400 mt-2 text-sm">Dashboard metrik penghematan waktu operasional developer (berdasarkan data historis vs simulasi bot).</p>
+                    <h2 class="text-2xl font-bold text-white">How To Execute (Cara Pakai)</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Panduan eksekusi harian setelah semua setup selesai.</p>
                 </div>
                 
-                <div class="glass bg-white/5 p-6 rounded-xl mb-8 border border-white/10">
-                    <div class="flex justify-between items-end mb-6">
-                        <div>
-                            <h3 class="text-lg font-bold text-cyan-400">Developer Time Spent per Release</h3>
-                            <p class="text-xs text-slate-500 mt-1">Manual Packaging vs Automated CI/CD Trigger</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass bg-white/5 p-8 rounded-xl border border-amber-500/20">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold">A</div>
+                            <h3 class="text-xl font-bold text-amber-400">Cara Build Staging (Manual)</h3>
                         </div>
-                        <div class="text-right">
-                            <span class="block text-3xl font-bold text-[#4ade80]">~95%</span>
-                            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Time Saved</span>
-                        </div>
+                        <ol class="space-y-4 text-sm text-slate-300 list-decimal pl-5">
+                            <li>Buka repository GitHub, klik tab <strong>Actions</strong> (di deretan atas).</li>
+                            <li>Di sidebar sebelah kiri, klik tulisan <strong>MANUAL BUILD - Staging/Dev</strong>.</li>
+                            <li>Di area kanan, klik tombol abu-abu bertuliskan <strong>Run workflow ▼</strong>.</li>
+                            <li>Ketik nama branch yang ingin di-build (misal ketik: <code class="text-cyan-300">staging</code>).</li>
+                            <li>Klik tombol hijau <strong>Run workflow</strong>.</li>
+                            <li><strong>Cara Download:</strong> Setelah selesai, klik riwayat run tersebut, scroll ke paling bawah halaman. Ada file zip di bagian <strong>Artifacts</strong>.</li>
+                        </ol>
                     </div>
-                    <div class="relative w-full max-w-4xl mx-auto h-[350px]">
-                        <canvas id="impactChart"></canvas>
+
+                    <div class="glass bg-white/5 p-8 rounded-xl border border-emerald-500/20">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">B</div>
+                            <h3 class="text-xl font-bold text-emerald-400">Cara Build Production (Release)</h3>
+                        </div>
+                        <ol class="space-y-4 text-sm text-slate-300 list-decimal pl-5">
+                            <li>Pastikan fitur sudah selesai dan dimerge ke branch <code class="text-cyan-300">main</code>.</li>
+                            <li>Di halaman utama repository, lihat sidebar kanan, klik <strong>Releases</strong>.</li>
+                            <li>Klik tombol <strong>Draft a new release</strong>.</li>
+                            <li>Buat Tag baru (misal: <code class="text-cyan-300">v1.2.0</code>).</li>
+                            <li>Tulis judul dan Release notes.</li>
+                            <li>Klik <strong>Publish release</strong>. <em>(Begitu diklik, build otomatis berjalan!)</em></li>
+                            <li><strong>Cara Download:</strong> Link download akan terlampir otomatis di halaman Release tersebut beserta link di Discord.</li>
+                        </ol>
                     </div>
                 </div>
             </section>
@@ -345,10 +411,7 @@ jobs:
             link.addEventListener('click', (e) => {
                 navLinks.forEach(l => l.classList.remove('active'));
                 e.target.classList.add('active');
-                
-                // Scroll behavior for nav items
                 e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                
                 const targetId = e.target.getAttribute('data-target');
                 viewSections.forEach(sec => {
                     if(sec.id === targetId) sec.classList.remove('hide');
@@ -357,17 +420,17 @@ jobs:
             });
         });
 
-        // Swimlane Logic
+        // Flowchart Logic
         const stepData = {
-            "1": { title: "Merge to Develop", content: "Developer menyelesaikan fitur dan menggabungkannya ke branch `develop`. Branch ini berfungsi sebagai staging sebelum rilis final." },
-            "2": { title: "Create GitHub Release", content: "CTO / Lead Programmer membuka GitHub, masuk ke menu Releases, dan membuat tag SemVer baru (misal: v0.2.0-beta) lalu menekan Publish." },
-            "3": { title: "Trigger Actions", content: "Sistem GitHub mendeteksi event 'published' dari rilis baru. Script YAML membaca instruksi dan mengirim payload *job* ke Self-Hosted Runner di studio." },
-            "4": { title: "Git Checkout", content: "Runner PC di kantor menerima instruksi, mengautentikasi otomatis, dan melakukan pull/checkout repository sesuai dengan tag versi terbaru." },
-            "5": { title: "UAT Build & Cook", content: "Runner mengeksekusi Unreal Automation Tool (RunUAT.bat). Ia mencari file .uproject, melakukan compile C++, dan memasak aset (Cook) untuk OS target." },
-            "6": { title: "Compress .zip", content: "PowerShell mengambil alih, membungkus folder hasil build ke dalam format arsip .zip secara otomatis agar siap untuk diunduh." },
-            "7": { title: "Upload to Release", content: "Menggunakan kredensial rahasia (Secret Token), runner mengunggah file .zip langsung ke halaman GitHub Release yang baru saja dibuat oleh CTO di langkah 2." },
-            "8": { title: "Discord Notification", content: "Aksi sukses terdeteksi. Script menembak URL Webhook Discord, memposting kartu info (embed) berisi link unduhan, status build, dan versi rilis." },
-            "9": { title: "QA Testing", content: "Tim Tester menerima *ping* di Discord, mengklik tautan, mengunduh file zip, mengekstrak, dan langsung mulai menguji versi terbaru tanpa intervensi manual dari programmer." }
+            "a1": { title: "Manual Trigger (workflow_dispatch)", content: "Menggunakan fitur `workflow_dispatch`. Cocok untuk testing harian (Staging/Dev). Tombol 'Run Workflow' akan muncul di GitHub Actions. Pengguna memilih branch mana yang akan dibuild secara spesifik." },
+            "a2": { title: "Runner Execute Staging", content: "PC Runner aktif. Mengambil kode dari spesifik branch yang diminta (misal: branch `staging`). Melakukan compile dan konfigurasi 'Development'." },
+            "a3": { title: "Save as Artifact", content: "Karena ini bukan Release resmi, file zip akan diunggah sebagai 'GitHub Artifact'. File ini hanya bertahan beberapa hari (misal 7 hari) dan bisa diunduh oleh internal tester." },
+            
+            "b1": { title: "Release Trigger (release: published)", content: "Terpicu secara otomatis HANYA ketika menekan tombol 'Publish Release' di GitHub dan membuat tag Semantic Versioning (misal v1.0.0)." },
+            "b2": { title: "Runner Execute Production", content: "PC Runner aktif. Mengambil kode dari commit terakhir di Release tag tersebut. Compile menggunakan konfigurasi 'Shipping' (tanpa debug code, performa maksimal)." },
+            "b3": { title: "Attach to Release", content: "File zip hasil build langsung diunggah menggunakan script dan ditempelkan (attached) ke halaman Release GitHub yang bersangkutan. Menjadi riwayat permanen project." },
+            
+            "end": { title: "Discord Broadcasting", content: "Apapun jalur yang digunakan (Staging maupun Production), jika proses mencapai akhir (Sukses atau Gagal), webhook Discord akan mengirim pesan lengkap dengan informasi Branch/Tag dan Link Download." }
         };
 
         const workflowNodes = document.querySelectorAll('.workflow-node');
@@ -379,69 +442,23 @@ jobs:
                 const data = stepData[step];
                 if(data) {
                     workflowNodes.forEach(n => {
-                        n.classList.remove('border-cyan-400');
-                        n.classList.add('border-white/10');
-                        n.style.background = 'rgba(255,255,255,0.05)';
+                        n.classList.remove('border-cyan-400', 'border-amber-400', 'border-emerald-400');
+                        n.style.boxShadow = 'none';
                     });
                     
-                    e.currentTarget.classList.remove('border-white/10');
-                    e.currentTarget.classList.add('border-cyan-400');
-                    e.currentTarget.style.background = 'rgba(34, 211, 238, 0.05)';
+                    let borderColor = 'border-cyan-400';
+                    if(step.includes('a')) borderColor = 'border-amber-400';
+                    if(step.includes('b')) borderColor = 'border-emerald-400';
+
+                    e.currentTarget.classList.add(borderColor);
+                    e.currentTarget.style.boxShadow = '0 0 15px rgba(255,255,255,0.1)';
 
                     detailPanel.innerHTML = `
-                        <p class="text-lg font-bold text-cyan-400 mb-2">${data.title}</p>
+                        <p class="text-lg font-bold text-white mb-2">${data.title}</p>
                         <p class="text-sm leading-relaxed text-slate-300 bg-black/40 p-3 rounded-lg border border-white/5 font-mono shadow-inner">${data.content}</p>
                     `;
                 }
             });
-        });
-
-        // Chart.js Configuration
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
-        
-        const ctxImpact = document.getElementById('impactChart').getContext('2d');
-        new Chart(ctxImpact, {
-            type: 'line',
-            data: {
-                labels: ['Rel_1.0', 'Rel_1.1', 'Rel_1.2', 'Rel_2.0', 'Rel_2.1', 'Rel_2.2'],
-                datasets: [
-                    {
-                        label: 'Manual Effort (Mins)',
-                        data: [45, 48, 42, 50, 46, 45],
-                        borderColor: '#f87171',
-                        backgroundColor: 'rgba(248, 113, 113, 0.1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#f87171',
-                        fill: true, tension: 0.4
-                    },
-                    {
-                        label: 'Automated Script (Mins)',
-                        data: [45, 2, 2, 2, 2, 2],
-                        borderColor: '#22d3ee',
-                        backgroundColor: 'rgba(34, 211, 238, 0.2)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#22d3ee',
-                        fill: true, tension: 0.4
-                    }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top', labels: { color: '#e2e8f0', usePointStyle: true, boxWidth: 8 } }
-                },
-                scales: { 
-                    y: { 
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        title: { display: true, text: 'Active Time (Minutes)', color: '#64748b' }
-                    },
-                    x: {
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' }
-                    }
-                }
-            }
         });
     </script>
 </body>
