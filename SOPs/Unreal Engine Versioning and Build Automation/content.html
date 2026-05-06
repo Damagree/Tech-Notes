@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Application Structure Plan: Refactored to include Two-Pipeline Architecture (Manual Staging vs Auto Release). Enhanced the Setup section to be highly detailed for a CTO setting it up from scratch. Flowchart visualizes the branching paths. -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -65,7 +64,7 @@
             <section id="view-overview" class="view-section">
                 <div class="mb-8">
                     <h2 class="text-2xl font-bold text-white">Dual-Pipeline Architecture</h2>
-                    <p class="text-slate-400 mt-2 text-sm">Arsitektur ini memisahkan jalur <strong>Staging</strong> (Manual Trigger via tombol di GitHub) dan jalur <strong>Production</strong> (Auto Trigger via Release) untuk menghemat resource PC Build.</p>
+                    <p class="text-slate-400 mt-2 text-sm">Arsitektur ini memisahkan jalur <strong>Staging</strong> (Manual Trigger) dan jalur <strong>Production</strong> (Auto Trigger via Release) untuk menghemat resource PC Build.</p>
                 </div>
 
                 <div class="flex flex-col lg:flex-row gap-8 mb-8">
@@ -73,7 +72,7 @@
                     <div class="flex-1 glass bg-white/5 py-8 px-4 rounded-xl border border-white/10 overflow-y-auto custom-scrollbar" style="max-height: 65vh;">
                         
                         <div class="flex flex-col items-center">
-                            <div class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded mb-4">START: Kode masuk ke GitHub</div>
+                            <div class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded mb-4">START: Kode di-push ke GitHub</div>
                             
                             <!-- Branching Point -->
                             <div class="flex justify-center w-full max-w-2xl relative mb-4">
@@ -169,7 +168,7 @@
                         <h3 class="text-lg font-bold text-white mb-2">2. Daftarkan PC ke GitHub (Self-Hosted Runner)</h3>
                         <p class="text-xs text-slate-400 mb-4">Menghubungkan GitHub dengan PC lokal agar GitHub bisa memberi perintah "Mulai Build".</p>
                         <ol class="space-y-2 text-sm text-slate-300 list-decimal pl-5 bg-black/30 p-4 rounded-lg">
-                            <li>Buka Repository GitHub > <strong>Settings</strong> > <strong>Actions</strong> > <strong>Runners</strong> (di menu kiri bawah).</li>
+                            <li>Buka Repository GitHub > <strong>Settings</strong> > <strong>Actions</strong> > <strong>Runners</strong>.</li>
                             <li>Klik tombol hijau <strong>New self-hosted runner</strong>. Pilih OS Windows.</li>
                             <li>Buka <strong>PowerShell</strong> di PC Runner. <em>Copy-paste</em> block kode yang diberikan GitHub ke PowerShell satu per satu.</li>
                             <li>Saat Configure minta nama, ketik misal: <code class="text-cyan-400">Studio-Build-PC</code>.</li>
@@ -250,14 +249,14 @@
             <section id="view-scripts" class="view-section hide">
                 <div class="mb-8">
                     <h2 class="text-2xl font-bold text-white">Pipeline Scripts (YAML)</h2>
-                    <p class="text-slate-400 mt-2 text-sm">Buat kedua file ini di PC kamu lalu push ke GitHub. Simpan di dalam folder <code class="bg-black/50 px-2 py-1 rounded">.github/workflows/</code>.</p>
+                    <p class="text-slate-400 mt-2 text-sm">Buat kedua file ini di PC lokal lalu push ke GitHub. Simpan di dalam folder <code class="bg-black/50 px-2 py-1 rounded">.github/workflows/</code>.</p>
                 </div>
                 
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <!-- Script 1 -->
-                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[600px]">
+                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[650px]">
                         <h3 class="text-md font-bold text-amber-400 mb-1">1. build_staging.yml</h3>
-                        <p class="text-xs text-slate-400 mb-4">Jalur Manual (Menggunakan workflow_dispatch). Simpan hasil sebagai Artifact.</p>
+                        <p class="text-xs text-slate-400 mb-4">Jalur Manual (workflow_dispatch). Simpan hasil sebagai Artifact. Memanfaatkan PowerShell untuk mem-bypass error Linux Container.</p>
                         <pre class="flex-1 text-cyan-300 p-4 rounded-lg text-xs overflow-auto custom-scrollbar border border-white/5"><code>name: MANUAL BUILD - Staging/Dev
 on:
   workflow_dispatch:
@@ -306,15 +305,15 @@ jobs:
         if: always()
         run: |
           $payload = @{
-            content = "**🛠️ STAGING BUILD Selesai!**`n**Project:** ${{ github.event.repository.name }}`n**Branch:** `${{ github.event.inputs.branch_target }}` `n**Status:** ${{ job.status }}`n*Silakan cek tab Actions di GitHub untuk mendownload Artifact-nya.*"
+            content = "**🛠️ STAGING BUILD Selesai!**`n**Branch:** `${{ github.event.inputs.branch_target }}` `n**Status:** ${{ job.status }}`n*Silakan cek tab Actions di GitHub untuk mendownload Artifact.*"
           }
           Invoke-RestMethod -Uri "${{ secrets.DISCORD_WEBHOOK }}" -Method Post -Body ($payload | ConvertTo-Json) -ContentType "application/json"</code></pre>
                     </div>
 
                     <!-- Script 2 -->
-                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[600px]">
+                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[650px]">
                         <h3 class="text-md font-bold text-emerald-400 mb-1">2. build_production.yml</h3>
-                        <p class="text-xs text-slate-400 mb-4">Jalur Otomatis (Terpicu saat buat Release). Nempel zip ke halaman rilis.</p>
+                        <p class="text-xs text-slate-400 mb-4">Jalur Otomatis (Terpicu saat Release). Nempel zip ke halaman rilis. Memanfaatkan PowerShell untuk mem-bypass error Unicode.</p>
                         <pre class="flex-1 text-emerald-300 p-4 rounded-lg text-xs overflow-auto custom-scrollbar border border-white/5"><code>name: AUTO BUILD - Official Release
 on:
   release:
@@ -322,6 +321,9 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
 
 jobs:
   build_prod:
@@ -359,7 +361,7 @@ jobs:
         if: always()
         run: |
           $payload = @{
-            content = "**🚀 PRODUCTION RELEASE Selesai!**`n**Project:** ${{ github.event.repository.name }}`n**Version:** `${{ github.event.release.tag_name }}` `n**Status:** ${{ job.status }}`n**Download Link:** ${{ github.event.release.html_url }}"
+            content = "**🚀 PRODUCTION RELEASE Selesai!**`n**Version:** `${{ github.event.release.tag_name }}` `n**Status:** ${{ job.status }}`n**Download Link:** ${{ github.event.release.html_url }}"
           }
           Invoke-RestMethod -Uri "${{ secrets.DISCORD_WEBHOOK }}" -Method Post -Body ($payload | ConvertTo-Json) -ContentType "application/json"</code></pre>
                     </div>
@@ -370,38 +372,39 @@ jobs:
             <section id="view-execute" class="view-section hide">
                 <div class="mb-8">
                     <h2 class="text-2xl font-bold text-white">How To Execute (Cara Pakai)</h2>
-                    <p class="text-slate-400 mt-2 text-sm">Panduan eksekusi harian setelah semua setup selesai.</p>
+                    <p class="text-slate-400 mt-2 text-sm">Panduan eksekusi harian setelah semua proses setup mesin & script selesai.</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="glass bg-white/5 p-8 rounded-xl border border-amber-500/20">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold">A</div>
-                            <h3 class="text-xl font-bold text-amber-400">Cara Build Staging (Manual)</h3>
+                            <h3 class="text-xl font-bold text-amber-400">Build Staging (Manual)</h3>
                         </div>
                         <ol class="space-y-4 text-sm text-slate-300 list-decimal pl-5">
-                            <li>Buka repository GitHub, klik tab <strong>Actions</strong> (di deretan atas).</li>
+                            <li>Pastikan branch (misal: <code class="text-cyan-300">staging</code>) sudah di-push (berada) di GitHub.</li>
+                            <li>Buka repository GitHub, klik tab <strong>Actions</strong>.</li>
                             <li>Di sidebar sebelah kiri, klik tulisan <strong>MANUAL BUILD - Staging/Dev</strong>.</li>
                             <li>Di area kanan, klik tombol abu-abu bertuliskan <strong>Run workflow ▼</strong>.</li>
-                            <li>Ketik nama branch yang ingin di-build (misal ketik: <code class="text-cyan-300">staging</code>).</li>
+                            <li>Ketik nama branch yang ingin di-build.</li>
                             <li>Klik tombol hijau <strong>Run workflow</strong>.</li>
-                            <li><strong>Cara Download:</strong> Setelah selesai, klik riwayat run tersebut, scroll ke paling bawah halaman. Ada file zip di bagian <strong>Artifacts</strong>.</li>
+                            <li><strong>Cara Download:</strong> Setelah status selesai (hijau), klik riwayat run tersebut, scroll ke paling bawah halaman. Ada file zip di bagian <strong>Artifacts</strong>.</li>
                         </ol>
                     </div>
 
                     <div class="glass bg-white/5 p-8 rounded-xl border border-emerald-500/20">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">B</div>
-                            <h3 class="text-xl font-bold text-emerald-400">Cara Build Production (Release)</h3>
+                            <h3 class="text-xl font-bold text-emerald-400">Build Production (Release)</h3>
                         </div>
                         <ol class="space-y-4 text-sm text-slate-300 list-decimal pl-5">
-                            <li>Pastikan fitur sudah selesai dan dimerge ke branch <code class="text-cyan-300">main</code>.</li>
-                            <li>Di halaman utama repository, lihat sidebar kanan, klik <strong>Releases</strong>.</li>
-                            <li>Klik tombol <strong>Draft a new release</strong>.</li>
-                            <li>Buat Tag baru (misal: <code class="text-cyan-300">v1.2.0</code>).</li>
-                            <li>Tulis judul dan Release notes.</li>
-                            <li>Klik <strong>Publish release</strong>. <em>(Begitu diklik, build otomatis berjalan!)</em></li>
-                            <li><strong>Cara Download:</strong> Link download akan terlampir otomatis di halaman Release tersebut beserta link di Discord.</li>
+                            <li>Di halaman utama repository, lihat sidebar kanan, klik <strong>Releases</strong> > <strong>Draft a new release</strong>.</li>
+                            <li>Klik dropdown <strong>Choose a tag</strong>, ketik nama versi. <br><span class="text-xs text-slate-500">(Contoh: `v1.0.0-alpha`, `v1.2.0-beta`, atau `v2.0.0`)</span>. Lalu klik tombol Create new tag di bawahnya.</li>
+                            <li>Pastikan kolom <strong>Target</strong> menunjuk ke branch <code class="text-cyan-300">main</code>.</li>
+                            <li>Isi judul dan Release notes.</li>
+                            <li><strong>Penanda Status (Penting):</strong> Centang <strong>"Set as a pre-release"</strong> jika ini versi alpha/beta/rc. Centang <strong>"Set as the latest release"</strong> jika ini versi stabil akhir.</li>
+                            <li>Klik tombol <strong>Publish release</strong>. <em>(Begitu diklik, build otomatis berjalan!)</em></li>
+                            <li><strong>Cara Download:</strong> File Zip akan terlampir otomatis di halaman Release tersebut.</li>
                         </ol>
                     </div>
                 </div>
@@ -438,7 +441,7 @@ jobs:
             "b2": { title: "Runner Execute Production", content: "PC Runner aktif. Mengambil kode dari commit terakhir di Release tag tersebut. Compile menggunakan konfigurasi 'Shipping' (tanpa debug code, performa maksimal)." },
             "b3": { title: "Attach to Release", content: "File zip hasil build langsung diunggah menggunakan script dan ditempelkan (attached) ke halaman Release GitHub yang bersangkutan. Menjadi riwayat permanen project." },
             
-            "end": { title: "Discord Broadcasting", content: "Apapun jalur yang digunakan (Staging maupun Production), jika proses mencapai akhir (Sukses atau Gagal), webhook Discord akan mengirim pesan lengkap dengan informasi Branch/Tag dan Link Download." }
+            "end": { title: "Discord Broadcasting", content: "Apapun jalur yang digunakan (Staging maupun Production), jika proses mencapai akhir (Sukses atau Gagal), webhook Discord akan mengirim pesan lengkap dengan informasi Branch/Tag dan Link Download menggunakan PowerShell native." }
         };
 
         const workflowNodes = document.querySelectorAll('.workflow-node');
