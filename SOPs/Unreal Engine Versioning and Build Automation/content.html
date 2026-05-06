@@ -151,7 +151,6 @@
                 </div>
                 
                 <div class="space-y-6">
-                    <!-- Step 1 -->
                     <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-cyan-500">
                         <h3 class="text-lg font-bold text-white mb-2">1. Persiapan PC Runner (Mesin Lokal)</h3>
                         <p class="text-xs text-slate-400 mb-4">Siapkan PC khusus di studio. Jangan pakai PC yang sedang digunakan *artist/programmer* aktif.</p>
@@ -163,7 +162,6 @@
                         </ol>
                     </div>
 
-                    <!-- Step 2 -->
                     <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-cyan-500">
                         <h3 class="text-lg font-bold text-white mb-2">2. Daftarkan PC ke GitHub (Self-Hosted Runner)</h3>
                         <p class="text-xs text-slate-400 mb-4">Menghubungkan GitHub dengan PC lokal agar GitHub bisa memberi perintah "Mulai Build".</p>
@@ -176,7 +174,6 @@
                         </ol>
                     </div>
 
-                    <!-- Step 3 -->
                     <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-[#5865F2]">
                         <h3 class="text-lg font-bold text-white mb-2">3. Pasang Discord Webhook</h3>
                         <p class="text-xs text-slate-400 mb-4">Agar tim dapat notifikasi otomatis di Discord jika build selesai.</p>
@@ -198,7 +195,6 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- MAIN -->
                     <div class="glass bg-white/5 p-6 rounded-xl border border-emerald-500/30 relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">Production</div>
                         <h3 class="text-lg font-bold text-emerald-400 mb-2 font-mono">main / master</h3>
@@ -211,7 +207,6 @@
                         </ul>
                     </div>
 
-                    <!-- STAGING -->
                     <div class="glass bg-white/5 p-6 rounded-xl border border-cyan-500/30 relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">Integration</div>
                         <h3 class="text-lg font-bold text-cyan-400 mb-2 font-mono">staging / develop</h3>
@@ -223,7 +218,6 @@
                         </ul>
                     </div>
 
-                    <!-- FEATURE -->
                     <div class="glass bg-white/5 p-6 rounded-xl border border-amber-500/30">
                         <h3 class="text-lg font-bold text-amber-400 mb-2 font-mono">feature/*</h3>
                         <p class="text-xs text-slate-300 mb-3">Cabang tempat programmer bekerja sehari-hari (contoh: <code class="text-amber-200 bg-black/40 px-1 rounded">feature/inventory</code>).</p>
@@ -233,7 +227,6 @@
                         </ul>
                     </div>
 
-                    <!-- HOTFIX -->
                     <div class="glass bg-white/5 p-6 rounded-xl border border-red-500/30">
                         <h3 class="text-lg font-bold text-red-400 mb-2 font-mono">hotfix/*</h3>
                         <p class="text-xs text-slate-300 mb-3">Cabang darurat untuk memperbaiki bug kritis di versi rilis / production.</p>
@@ -252,11 +245,16 @@
                     <p class="text-slate-400 mt-2 text-sm">Buat kedua file ini di PC lokal lalu push ke GitHub. Simpan di dalam folder <code class="bg-black/50 px-2 py-1 rounded">.github/workflows/</code>.</p>
                 </div>
                 
+                <div class="glass bg-blue-900/20 p-5 rounded-xl border border-blue-500/30 mb-6">
+                    <h3 class="text-md font-bold text-blue-400 mb-2 flex items-center gap-2">💡 Auto-Generate Version File & Anti-Tamper</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">Script di bawah ini otomatis men-generate file <code class="text-cyan-300 bg-black/40 px-1 rounded">Content/version_info.json</code> yang berisi <strong>Release Title & Notes</strong> sebelum Unreal melakukan <em>Cook</em>.<br><br><strong>Agar anti-tamper (sulit dimodifikasi pemain):</strong><br>Pastikan file JSON ini terbungkus ke dalam file <code class="text-cyan-300 bg-black/40 px-1 rounded">.pak</code>. Di Unreal Engine, buka <strong>Project Settings > Packaging</strong>, lalu tambahkan folder tempat JSON ini berada ke dalam daftar <strong>"Additional Non-Asset Directories to Package"</strong>.</p>
+                </div>
+
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <!-- Script 1 -->
-                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[650px]">
+                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[750px]">
                         <h3 class="text-md font-bold text-amber-400 mb-1">1. build_staging.yml</h3>
-                        <p class="text-xs text-slate-400 mb-4">Jalur Manual (workflow_dispatch). Simpan hasil sebagai Artifact. Memanfaatkan PowerShell untuk mem-bypass error Linux Container.</p>
+                        <p class="text-xs text-slate-400 mb-4">Jalur Manual (workflow_dispatch). Simpan hasil sebagai Artifact. Menggenerate dummy JSON info.</p>
                         <pre class="flex-1 text-cyan-300 p-4 rounded-lg text-xs overflow-auto custom-scrollbar border border-white/5"><code>name: MANUAL BUILD - Staging/Dev
 on:
   workflow_dispatch:
@@ -285,6 +283,15 @@ jobs:
           echo "ZIP_NAME=${REPO_NAME}_Stg_${DATE_STR}.zip" >> $env:GITHUB_ENV
           echo "BUILD_DIR=${{ github.workspace }}\Build_Output" >> $env:GITHUB_ENV
 
+      - name: Generate Version Info (JSON)
+        env:
+          BRANCH_NAME: ${{ github.event.inputs.branch_target }}
+        run: |
+          $VersionData = @{ version="Stg-$env:BRANCH_NAME"; title="Staging Build"; notes="Manual build"; date=(Get-Date -Format "yyyy-MM-dd") }
+          $JsonContent = $VersionData | ConvertTo-Json
+          $FilePath = Join-Path -Path "${{ github.workspace }}" -ChildPath "Content\version_info.json"
+          [System.IO.File]::WriteAllText($FilePath, $JsonContent, [System.Text.Encoding]::UTF8)
+
       - name: UAT Build
         run: |
           $UAT_Path = "C:\Program Files\Epic Games\UE_5.3\Engine\Build\BatchFiles\RunUAT.bat"
@@ -305,15 +312,15 @@ jobs:
         if: always()
         run: |
           $payload = @{
-            content = "**🛠️ STAGING BUILD Selesai!**`n**Branch:** `${{ github.event.inputs.branch_target }}` `n**Status:** ${{ job.status }}`n*Silakan cek tab Actions di GitHub untuk mendownload Artifact.*"
+            content = "**STAGING BUILD Selesai!**`n**Branch:** `${{ github.event.inputs.branch_target }}` `n**Status:** ${{ job.status }}`n*Silakan cek tab Actions di GitHub untuk mendownload Artifact.*"
           }
           Invoke-RestMethod -Uri "${{ secrets.DISCORD_WEBHOOK }}" -Method Post -Body ($payload | ConvertTo-Json) -ContentType "application/json"</code></pre>
                     </div>
 
                     <!-- Script 2 -->
-                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[650px]">
+                    <div class="glass bg-white/5 p-6 rounded-xl flex flex-col h-[750px]">
                         <h3 class="text-md font-bold text-emerald-400 mb-1">2. build_production.yml</h3>
-                        <p class="text-xs text-slate-400 mb-4">Jalur Otomatis (Terpicu saat Release). Nempel zip ke halaman rilis. Memanfaatkan PowerShell untuk mem-bypass error Unicode.</p>
+                        <p class="text-xs text-slate-400 mb-4">Jalur Otomatis (Terpicu saat Release). Mengekstrak Release Notes menjadi JSON untuk dibaca di game.</p>
                         <pre class="flex-1 text-emerald-300 p-4 rounded-lg text-xs overflow-auto custom-scrollbar border border-white/5"><code>name: AUTO BUILD - Official Release
 on:
   release:
@@ -339,6 +346,17 @@ jobs:
           echo "ZIP_NAME=${REPO_NAME}_${TAG_NAME}.zip" >> $env:GITHUB_ENV
           echo "BUILD_DIR=${{ github.workspace }}\Build_Output" >> $env:GITHUB_ENV
 
+      - name: Generate Version Info (JSON)
+        env:
+          REL_TITLE: ${{ github.event.release.name }}
+          REL_NOTES: ${{ github.event.release.body }}
+          REL_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          $VersionData = @{ version=$env:REL_TAG; title=$env:REL_TITLE; notes=$env:REL_NOTES; date=(Get-Date -Format "yyyy-MM-dd") }
+          $JsonContent = $VersionData | ConvertTo-Json
+          $FilePath = Join-Path -Path "${{ github.workspace }}" -ChildPath "Content\version_info.json"
+          [System.IO.File]::WriteAllText($FilePath, $JsonContent, [System.Text.Encoding]::UTF8)
+
       - name: UAT Build
         run: |
           $UAT_Path = "C:\Program Files\Epic Games\UE_5.3\Engine\Build\BatchFiles\RunUAT.bat"
@@ -361,7 +379,7 @@ jobs:
         if: always()
         run: |
           $payload = @{
-            content = "**🚀 PRODUCTION RELEASE Selesai!**`n**Version:** `${{ github.event.release.tag_name }}` `n**Status:** ${{ job.status }}`n**Download Link:** ${{ github.event.release.html_url }}"
+            content = "**PRODUCTION RELEASE Selesai!**`n**Version:** `${{ github.event.release.tag_name }}` `n**Status:** ${{ job.status }}`n**Download Link:** ${{ github.event.release.html_url }}"
           }
           Invoke-RestMethod -Uri "${{ secrets.DISCORD_WEBHOOK }}" -Method Post -Body ($payload | ConvertTo-Json) -ContentType "application/json"</code></pre>
                     </div>
