@@ -302,12 +302,13 @@ jobs:
           path: ${{ env.ZIP_NAME }}
           retention-days: 7
 
-      - name: Notify
+      - name: Notify Discord
         if: always()
-        uses: appleboy/discord-action@master
-        with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK }}
-          message: "**🛠️ STAGING BUILD Selesai!**\nBranch: ${{ github.event.inputs.branch_target }}\nCek tab Actions GitHub untuk download."</code></pre>
+        run: |
+          $payload = @{
+            content = "**🛠️ STAGING BUILD Selesai!**`n**Project:** ${{ github.event.repository.name }}`n**Branch:** `${{ github.event.inputs.branch_target }}` `n**Status:** ${{ job.status }}`n*Silakan cek tab Actions di GitHub untuk mendownload Artifact-nya.*"
+          }
+          Invoke-RestMethod -Uri "${{ secrets.DISCORD_WEBHOOK }}" -Method Post -Body ($payload | ConvertTo-Json) -ContentType "application/json"</code></pre>
                     </div>
 
                     <!-- Script 2 -->
@@ -354,12 +355,13 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
 
-      - name: Notify
+      - name: Notify Discord
         if: always()
-        uses: appleboy/discord-action@master
-        with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK }}
-          message: "**🚀 RELEASE Selesai!**\nVersi: ${{ github.event.release.tag_name }}\nLink: ${{ github.event.release.html_url }}"</code></pre>
+        run: |
+          $payload = @{
+            content = "**🚀 PRODUCTION RELEASE Selesai!**`n**Project:** ${{ github.event.repository.name }}`n**Version:** `${{ github.event.release.tag_name }}` `n**Status:** ${{ job.status }}`n**Download Link:** ${{ github.event.release.html_url }}"
+          }
+          Invoke-RestMethod -Uri "${{ secrets.DISCORD_WEBHOOK }}" -Method Post -Body ($payload | ConvertTo-Json) -ContentType "application/json"</code></pre>
                     </div>
                 </div>
             </section>
