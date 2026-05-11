@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    --neon-cyan: #22d3ee;
+    --glass-bg: rgba(15, 23, 42, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    background-color: #020617;
+    background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
+    color: #f1f5f9;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow: hidden;
+}
+
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+}
+
+.sidebar-link.active {
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--neon-cyan);
+    border-right: 3px solid var(--neon-cyan);
+}
+
+.view-toggle.active {
+    background: var(--neon-cyan);
+    color: #020617;
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(34, 211, 238, 0.3);
+    border-radius: 10px;
+}
+
+/* Severity Colors */
+.sev-low {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.sev-medium {
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.1);
+    border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.sev-high {
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.sev-critical {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(248, 113, 113, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(248, 113, 113, 0);
+    }
+}
