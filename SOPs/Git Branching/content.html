@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive SOP: Git Branching Strategy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --neon-cyan: #22d3ee;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background-color: #020617; 
+            background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden; 
+        }
+
+        .glass { background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        
+        .nav-link { transition: all 0.2s ease; border: 1px solid transparent; }
+        .nav-link.active {
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--neon-cyan);
+            border-color: rgba(34, 211, 238, 0.3);
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.1);
+        }
+        .nav-link:hover:not(.active) { background: rgba(255, 255, 255, 0.05); border-color: rgba(255,255,255,0.1); }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(34, 211, 238, 0.6); }
+
+        pre { font-family: 'JetBrains Mono', monospace; background: #010409 !important; }
+
+        .hide { display: none; }
+        .workflow-node { transition: all 0.2s; cursor: pointer; }
+        .workflow-node:hover { transform: translateY(-3px); box-shadow: 0 0 15px rgba(34, 211, 238, 0.2); border-color: var(--neon-cyan); }
+    </style>
+</head>
+<body class="flex flex-col h-screen w-full">
+
+    <!-- NAVIGATION -->
+    <nav class="glass sticky top-0 z-50 w-full border-b border-white/10 px-6 py-3 flex gap-2 overflow-x-auto custom-scrollbar shadow-lg shadow-black/20 shrink-0">
+        <button data-target="view-topology" class="nav-link active px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Branch Topology</button>
+        <button data-target="view-workflow" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Feature Workflow</button>
+        <button data-target="view-hotfix" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Hotfix Workflow</button>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
+        <div class="max-w-6xl mx-auto">
+
+            <!-- SECTION 1: TOPOLOGY -->
+            <section id="view-topology" class="view-section">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Git Branch Topology</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Empat tipe cabang utama yang digunakan di Cube Studio. Patuhi arsitektur ini untuk mencegah <em>conflict</em> fatal.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- MAIN -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border-t-4 border-t-emerald-500 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">Production</div>
+                        <h3 class="text-xl font-bold text-emerald-400 mb-2 font-mono">main / master</h3>
+                        <p class="text-sm text-slate-300 mb-4">Cabang paling sakral. Berisi kode yang 100% stabil dan siap rilis ke pemain/klien.</p>
+                        <ul class="text-xs text-slate-400 space-y-2">
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">■</span> <strong>Protected:</strong> Dilarang keras melakukan <em>direct commit/push</em>.</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">■</span> <strong>Sumber:</strong> Hanya menerima PR dari <code class="text-cyan-300 bg-black/40 px-1 rounded">staging</code> atau <code class="text-rose-300 bg-black/40 px-1 rounded">hotfix</code>.</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">■</span> <strong>Trigger:</strong> Memicu <em>Auto Prod Build</em> jika di-tag Release.</li>
+                        </ul>
+                    </div>
+
+                    <!-- STAGING -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border-t-4 border-t-cyan-500 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">Integration</div>
+                        <h3 class="text-xl font-bold text-cyan-400 mb-2 font-mono">staging / develop</h3>
+                        <p class="text-sm text-slate-300 mb-4">Pusat integrasi kode harian. Tempat berkumpulnya seluruh fitur dari berbagai programmer.</p>
+                        <ul class="text-xs text-slate-400 space-y-2">
+                            <li class="flex items-start gap-2"><span class="text-cyan-400">■</span> <strong>Default:</strong> Area utama QA Tester melakukan uji coba.</li>
+                            <li class="flex items-start gap-2"><span class="text-cyan-400">■</span> <strong>Aturan:</strong> Dilarang <em>coding</em> berhari-hari langsung di cabang ini.</li>
+                            <li class="flex items-start gap-2"><span class="text-cyan-400">■</span> <strong>Trigger:</strong> Target utama untuk tombol <em>Manual Staging Build</em>.</li>
+                        </ul>
+                    </div>
+
+                    <!-- FEATURE -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border-t-4 border-t-amber-500 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-amber-500/20 text-amber-400 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">Working</div>
+                        <h3 class="text-xl font-bold text-amber-400 mb-2 font-mono">feature/*</h3>
+                        <p class="text-sm text-slate-300 mb-4">Area kerja individu. Format: <code class="bg-black/50 px-1 text-amber-200">feature/[nama-tugas]</code>.</p>
+                        <ul class="text-xs text-slate-400 space-y-2">
+                            <li class="flex items-start gap-2"><span class="text-amber-400">■</span> <strong>Asal:</strong> Selalu dibuat bercabang dari <code class="text-cyan-300 bg-black/40 px-1 rounded">staging</code>.</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-400">■</span> <strong>Tujuan:</strong> Setelah selesai, buat PR untuk di-merge ke <code class="text-cyan-300 bg-black/40 px-1 rounded">staging</code>.</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-400">■</span> <strong>Sinkronisasi:</strong> Wajib rutin <em>pull</em> dari staging jika pengerjaan lama agar tidak <em>conflict</em>.</li>
+                        </ul>
+                    </div>
+
+                    <!-- HOTFIX -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border-t-4 border-t-rose-500 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-rose-500/20 text-rose-400 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">Emergency</div>
+                        <h3 class="text-xl font-bold text-rose-400 mb-2 font-mono">hotfix/*</h3>
+                        <p class="text-sm text-slate-300 mb-4">Cabang darurat untuk memperbaiki bug kritis di versi rilis.</p>
+                        <ul class="text-xs text-slate-400 space-y-2">
+                            <li class="flex items-start gap-2"><span class="text-rose-400">■</span> <strong>Asal:</strong> WAJIB dibuat bercabang langsung dari <code class="text-emerald-300 bg-black/40 px-1 rounded">main</code>.</li>
+                            <li class="flex items-start gap-2"><span class="text-rose-400">■</span> <strong>Tujuan:</strong> Di-merge ke <code class="text-emerald-300 bg-black/40 px-1 rounded">main</code> <strong>DAN</strong> ke <code class="text-cyan-300 bg-black/40 px-1 rounded">staging</code>.</li>
+                            <li class="flex items-start gap-2"><span class="text-rose-400">■</span> <strong>Alasan:</strong> Agar bug yang sama tidak terulang pada perilisan fitur di masa depan.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: FEATURE WORKFLOW GRAPH -->
+            <section id="view-workflow" class="view-section hide">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Siklus Pengembangan Fitur</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Langkah demi langkah cara mengerjakan tugas baru hingga masuk ke branch integrasi.</p>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-8 mb-8">
+                    <div class="flex-1 glass bg-white/5 py-8 px-4 rounded-xl border border-white/10 h-auto">
+                        <div class="flex flex-col items-center">
+                            
+                            <!-- Steps -->
+                            <div class="workflow-node w-full max-w-sm bg-cyan-900/40 border border-cyan-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="f1">
+                                <div class="text-[10px] text-cyan-400 font-mono mb-1">1. Persiapan</div>
+                                <div class="font-bold text-sm text-white">Checkout & Pull 'staging' terbaru</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <div class="workflow-node w-full max-w-sm bg-amber-900/40 border border-amber-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="f2">
+                                <div class="text-[10px] text-amber-400 font-mono mb-1">2. Isolasi Pekerjaan</div>
+                                <div class="font-bold text-sm text-white">Buat branch 'feature/[nama-fitur]'</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <div class="workflow-node w-full max-w-sm bg-amber-900/40 border border-amber-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="f3">
+                                <div class="text-[10px] text-amber-400 font-mono mb-1">3. Pengerjaan</div>
+                                <div class="font-bold text-sm text-white">Coding, Commit, dan Push ke remote</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <div class="workflow-node w-full max-w-sm bg-slate-800 border border-slate-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="f4">
+                                <div class="text-[10px] text-slate-400 font-mono mb-1">4. Code Review</div>
+                                <div class="font-bold text-sm text-white">Buka Pull Request (PR) ke 'staging'</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <div class="workflow-node w-full max-w-sm bg-cyan-900/40 border border-cyan-500 text-center p-4 rounded-lg shadow-lg relative z-10" data-step="f5">
+                                <div class="text-[10px] text-cyan-400 font-mono mb-1">5. Integrasi Selesai</div>
+                                <div class="font-bold text-sm text-white">Merge ke 'staging' & Hapus branch fitur</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="lg:w-1/3">
+                        <div class="glass rounded-xl p-6 shadow-lg border border-white/10 bg-white/5 sticky top-24">
+                            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-4">Detail Siklus Fitur</h3>
+                            <div id="feature-content" class="text-slate-300 min-h-[150px]">
+                                <p class="text-lg font-semibold mb-2 text-white">Menunggu Interaksi...</p>
+                                <p class="text-sm font-mono text-slate-500">> Klik salah satu langkah pada diagram untuk melihat command Git yang digunakan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: HOTFIX WORKFLOW GRAPH -->
+            <section id="view-hotfix" class="view-section hide">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Siklus Darurat (Hotfix)</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Alur spesifik saat terjadi bug kritis di versi rilis publik (Production).</p>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-8 mb-8">
+                    <div class="flex-1 glass bg-white/5 py-8 px-4 rounded-xl border border-white/10 h-auto">
+                        <div class="flex flex-col items-center">
+                            
+                            <div class="workflow-node w-full max-w-sm bg-emerald-900/40 border border-emerald-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="h1">
+                                <div class="text-[10px] text-emerald-400 font-mono mb-1">1. Titik Awal</div>
+                                <div class="font-bold text-sm text-white">Checkout dari 'main'</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <div class="workflow-node w-full max-w-sm bg-rose-900/40 border border-rose-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="h2">
+                                <div class="text-[10px] text-rose-400 font-mono mb-1">2. Isolasi Darurat</div>
+                                <div class="font-bold text-sm text-white">Buat branch 'hotfix/[nama-bug]'</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <div class="workflow-node w-full max-w-sm bg-rose-900/40 border border-rose-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="h3">
+                                <div class="text-[10px] text-rose-400 font-mono mb-1">3. Eksekusi Fix</div>
+                                <div class="font-bold text-sm text-white">Perbaiki bug, Commit, Push</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <div class="workflow-node w-full max-w-sm bg-slate-800 border border-slate-500 text-center p-4 rounded-lg shadow-lg mb-4 relative z-10" data-step="h4">
+                                <div class="text-[10px] text-slate-400 font-mono mb-1">4. Code Review</div>
+                                <div class="font-bold text-sm text-white">Buka PR ke 'main' & 'staging'</div>
+                            </div>
+
+                            <!-- Fork -->
+                            <div class="flex justify-center w-full max-w-md relative mb-4">
+                                <div class="absolute top-0 w-[60%] h-6 border-t-2 border-l-2 border-r-2 border-slate-600 border-solid rounded-t-lg"></div>
+                            </div>
+
+                            <div class="flex w-full max-w-lg justify-between gap-4 mb-4">
+                                <div class="workflow-node flex-1 bg-emerald-900/40 border border-emerald-500 text-center p-3 rounded-lg shadow-lg relative z-10" data-step="h5a">
+                                    <div class="text-[10px] text-emerald-400 font-mono mb-1">Prioritas 1</div>
+                                    <div class="font-bold text-sm text-white">Merge ke 'main' (Rilis patch)</div>
+                                </div>
+
+                                <div class="workflow-node flex-1 bg-cyan-900/40 border border-cyan-500 text-center p-3 rounded-lg shadow-lg relative z-10" data-step="h5b">
+                                    <div class="text-[10px] text-cyan-400 font-mono mb-1">Prioritas 2</div>
+                                    <div class="font-bold text-sm text-white">Merge ke 'staging' (Cegah regressi)</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="lg:w-1/3">
+                        <div class="glass rounded-xl p-6 shadow-lg border border-white/10 bg-white/5 sticky top-24">
+                            <h3 class="text-xs font-bold text-rose-400 uppercase tracking-widest mb-4">Detail Siklus Hotfix</h3>
+                            <div id="hotfix-content" class="text-slate-300 min-h-[150px]">
+                                <p class="text-lg font-semibold mb-2 text-white">Menunggu Interaksi...</p>
+                                <p class="text-sm font-mono text-slate-500">> Klik langkah pada diagram untuk memahami kenapa Hotfix diperlakukan berbeda.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // Navigation Logic
+        const navLinks = document.querySelectorAll('.nav-link');
+        const viewSections = document.querySelectorAll('.view-section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                navLinks.forEach(l => l.classList.remove('active'));
+                e.target.classList.add('active');
+                e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                const targetId = e.target.getAttribute('data-target');
+                viewSections.forEach(sec => {
+                    if(sec.id === targetId) sec.classList.remove('hide');
+                    else sec.classList.add('hide');
+                });
+            });
+        });
+
+        // Content Data
+        const stepData = {
+            "f1": { title: "Persiapan Lingkungan", content: "Pastikan Anda selalu bermula dari staging yang paling *up-to-date* agar fitur baru tidak dibangun di atas kode usang.<br><br><code class='text-cyan-300'>git checkout staging</code><br><code class='text-cyan-300'>git pull origin staging</code>" },
+            "f2": { title: "Buat Branch Fitur", content: "Isolasi pekerjaan Anda. Jangan pernah *coding* di staging langsung.<br><br><code class='text-amber-300'>git checkout -b feature/nama-fitur</code>" },
+            "f3": { title: "Coding & Commit", content: "Lakukan pekerjaan Anda, lalu commit dengan pesan yang deskriptif.<br><br><code class='text-amber-300'>git add .</code><br><code class='text-amber-300'>git commit -m 'feat: tambah fitur X'</code><br><code class='text-amber-300'>git push origin feature/nama-fitur</code>" },
+            "f4": { title: "Buka Pull Request", content: "Di GitHub, buat Pull Request (PR) dari branch fitur Anda menuju branch `staging`. Minta Lead atau rekan setim untuk mereview kode (*Peer Review*)." },
+            "f5": { title: "Merge & Cleanup", content: "Setelah di-approve, PR di-merge ke `staging`. Branch fitur Anda kemudian dapat dihapus secara aman melalui antarmuka GitHub untuk menjaga repository tetap bersih." },
+            
+            "h1": { title: "Asal Hotfix", content: "Hotfix HANYA dilakukan jika ada bug di versi *Production/Live*. Karena itu, kita harus berangkat dari kode sumber yang sedang dirilis.<br><br><code class='text-emerald-300'>git checkout main</code><br><code class='text-emerald-300'>git pull origin main</code>" },
+            "h2": { title: "Branch Darurat", content: "Buat branch khusus dengan awalan hotfix.<br><br><code class='text-rose-300'>git checkout -b hotfix/crash-login</code>" },
+            "h3": { title: "Eksekusi Fix", content: "Perbaiki bug secepat mungkin. Usahakan perubahan seminimal mungkin hanya untuk mengatasi isu terkait tanpa menambah fitur lain." },
+            "h4": { title: "Review & Dual PR", content: "Sangat krusial! Buka *Pull Request* perbaikan ini. Namun perhatikan langkah selanjutnya karena ini tidak seperti branch fitur biasa." },
+            "h5a": { title: "Merge ke Main", content: "Pertama, merge PR ke `main`. Ini akan memicu pembuatan versi *Patch* baru (misal v1.0.1) untuk dikirimkan ke pemain secepatnya lewat CI/CD." },
+            "h5b": { title: "Merge ke Staging", content: "KEDUA, merge JUGA perubahan tersebut ke `staging`. Kenapa? Jika tidak, bug yang sama akan muncul kembali bulan depan saat `staging` dirilis ke `main`." }
+        };
+
+        const workflowNodes = document.querySelectorAll('.workflow-node');
+        
+        workflowNodes.forEach(node => {
+            node.addEventListener('click', (e) => {
+                const step = e.currentTarget.getAttribute('data-step');
+                const data = stepData[step];
+                if(data) {
+                    workflowNodes.forEach(n => {
+                        n.classList.remove('border-cyan-400', 'border-amber-400', 'border-emerald-400', 'border-rose-400', 'border-slate-400');
+                        n.style.boxShadow = 'none';
+                    });
+                    
+                    let borderColor = 'border-slate-400';
+                    if(step.startsWith('f')) borderColor = 'border-amber-400';
+                    if(step === 'f1' || step === 'f5') borderColor = 'border-cyan-400';
+                    if(step.startsWith('h')) borderColor = 'border-rose-400';
+                    if(step === 'h1' || step === 'h5a') borderColor = 'border-emerald-400';
+                    if(step === 'h5b') borderColor = 'border-cyan-400';
+
+                    e.currentTarget.classList.add(borderColor);
+                    e.currentTarget.style.boxShadow = '0 0 15px rgba(255,255,255,0.1)';
+
+                    const panelId = step.startsWith('f') ? 'feature-content' : 'hotfix-content';
+                    document.getElementById(panelId).innerHTML = `
+                        <p class="text-lg font-bold text-white mb-2">${data.title}</p>
+                        <p class="text-sm leading-relaxed text-slate-300 bg-black/40 p-3 rounded-lg border border-white/5 font-mono shadow-inner">${data.content}</p>
+                    `;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
