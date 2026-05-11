@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive SOP: Versioning & Release Nomenclature</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --neon-cyan: #22d3ee;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background-color: #020617; 
+            background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden; /* Prevent body scroll, handled by main */
+        }
+
+        .glass { background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        
+        .nav-link { transition: all 0.2s ease; border: 1px solid transparent; }
+        .nav-link.active {
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--neon-cyan);
+            border-color: rgba(34, 211, 238, 0.3);
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.1);
+        }
+        .nav-link:hover:not(.active) { background: rgba(255, 255, 255, 0.05); border-color: rgba(255,255,255,0.1); }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(34, 211, 238, 0.6); }
+
+        pre { font-family: 'JetBrains Mono', monospace; background: #010409 !important; }
+
+        .hide { display: none; }
+        .workflow-node { transition: all 0.2s; cursor: pointer; }
+        .workflow-node:hover { transform: translateY(-3px); box-shadow: 0 0 15px rgba(34, 211, 238, 0.2); border-color: var(--neon-cyan); }
+    </style>
+</head>
+<body class="flex flex-col h-screen w-full">
+
+    <!-- NAVIGATION -->
+    <nav class="glass sticky top-0 z-50 w-full border-b border-white/10 px-6 py-3 flex gap-2 overflow-x-auto custom-scrollbar shadow-lg shadow-black/20 shrink-0">
+        <button data-target="view-semver" class="nav-link active px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">SemVer Anatomy</button>
+        <button data-target="view-stages" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Release Stages</button>
+        <button data-target="view-workflow" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Workflow Graph</button>
+        <button data-target="view-execute" class="nav-link px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap text-slate-400 hover:text-white">Step-by-Step Guide</button>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
+        <div class="max-w-6xl mx-auto">
+
+            <!-- SECTION 1: SEMVER ANATOMY -->
+            <section id="view-semver" class="view-section">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Anatomi Semantic Versioning (SemVer)</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Semua rilis dan tag di GitHub <strong>WAJIB</strong> mengikuti format standar: <code class="bg-black/50 text-cyan-400 px-2 py-1 rounded font-mono border border-cyan-900">v[MAJOR].[MINOR].[PATCH]-[STAGE]</code></p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- MAJOR -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-red-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="bg-red-500/20 text-red-400 text-xs font-bold px-3 py-1 rounded uppercase tracking-widest">[MAJOR]</span>
+                            <h3 class="text-lg font-bold text-white">Perubahan Arsitektur Besar</h3>
+                        </div>
+                        <p class="text-sm text-slate-300">Perubahan arsitektur besar-besaran, perombakan <em>core gameplay</em>, atau pembaruan engine yang membuat versi ini <strong>tidak kompatibel</strong> dengan versi sebelumnya.</p>
+                    </div>
+
+                    <!-- MINOR -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-amber-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="bg-amber-500/20 text-amber-400 text-xs font-bold px-3 py-1 rounded uppercase tracking-widest">[MINOR]</span>
+                            <h3 class="text-lg font-bold text-white">Penambahan Fitur Baru</h3>
+                        </div>
+                        <p class="text-sm text-slate-300">Penambahan fitur baru yang berjalan lancar dengan sistem yang sudah ada (<em>backward-compatible</em>). <br><span class="text-slate-500">Contoh: Menambahkan sistem inventory baru atau integrasi multiplayer.</span></p>
+                    </div>
+
+                    <!-- PATCH -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border-l-4 border-l-emerald-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-1 rounded uppercase tracking-widest">[PATCH]</span>
+                            <h3 class="text-lg font-bold text-white">Perbaikan Bug (Bug Fixes)</h3>
+                        </div>
+                        <p class="text-sm text-slate-300">Perbaikan bug dan <em>hotfix</em> darurat yang tidak mengubah fitur utama. <br><span class="text-slate-500">Contoh: Memperbaiki UI yang glitch, menutup memory leak, dsb.</span></p>
+                    </div>
+
+                    <div class="glass bg-cyan-900/20 p-5 rounded-xl border border-cyan-500/30 mt-6 flex items-start gap-4">
+                        <div class="text-2xl mt-1">💡</div>
+                        <div>
+                            <h4 class="text-sm font-bold text-cyan-400 mb-1">Contoh Penggunaan</h4>
+                            <p class="text-sm text-slate-300">Versi <code class="text-white font-mono bg-black/40 px-1 rounded">v1.2.4</code> berarti: Major versi <strong>1</strong>, penambahan fitur Minor ke-<strong>2</strong>, dan Patch/perbaikan bug ke-<strong>4</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: RELEASE STAGES -->
+            <section id="view-stages" class="view-section hide">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Tahapan Rilis (Release Stages)</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Suffix/akhiran yang menandakan tingkat kematangan dan stabilitas sebuah <em>build</em>. Sangat penting untuk konfigurasi rilis di GitHub.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- ALPHA -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border border-rose-500/30 relative overflow-hidden">
+                        <h3 class="text-xl font-bold text-rose-400 mb-1 font-mono">-alpha</h3>
+                        <p class="text-xs text-rose-200/50 uppercase tracking-widest font-bold mb-4">Alpha Stage</p>
+                        
+                        <div class="space-y-3">
+                            <div class="text-sm text-slate-300"><strong>Definisi:</strong> "Fitur Belum Lengkap". Core mechanic bisa dimainkan, namun sistem utama lainnya mungkin kosong dan <em>sangat rentan bug</em>.</div>
+                            <div class="text-sm text-slate-300"><strong>Target:</strong> Internal testing tim & prototyping.</div>
+                            <div class="text-sm text-slate-300"><strong>Contoh Tag:</strong> <code class="bg-black/50 px-1 rounded text-rose-300">v0.1.0-alpha</code>, <code class="bg-black/50 px-1 rounded text-rose-300">v1.0.0-alpha</code></div>
+                            <div class="mt-4 bg-rose-900/30 border border-rose-500/30 p-2 rounded text-xs text-rose-200 text-center">
+                                <strong>Jika menggunakan GitHub:</strong> Centang "Set as a pre-release"
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BETA -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border border-amber-500/30 relative overflow-hidden">
+                        <h3 class="text-xl font-bold text-amber-400 mb-1 font-mono">-beta</h3>
+                        <p class="text-xs text-amber-200/50 uppercase tracking-widest font-bold mb-4">Beta Stage</p>
+                        
+                        <div class="space-y-3">
+                            <div class="text-sm text-slate-300"><strong>Definisi:</strong> "Fitur Lengkap". Fitur berhenti bertambah. 100% fokus pada perbaikan bug, optimasi, dan pemolesan (polish).</div>
+                            <div class="text-sm text-slate-300"><strong>Target:</strong> QA Tester, eksternal tester, client preview.</div>
+                            <div class="text-sm text-slate-300"><strong>Contoh Tag:</strong> <code class="bg-black/50 px-1 rounded text-amber-300">v1.0.0-beta</code>, <code class="bg-black/50 px-1 rounded text-amber-300">v1.2.0-beta</code></div>
+                            <div class="mt-4 bg-amber-900/30 border border-amber-500/30 p-2 rounded text-xs text-amber-200 text-center">
+                                <strong>Jika menggunakan GitHub:</strong> Centang "Set as a pre-release"
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RC -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border border-purple-500/30 relative overflow-hidden">
+                        <h3 class="text-xl font-bold text-purple-400 mb-1 font-mono">-rc</h3>
+                        <p class="text-xs text-purple-200/50 uppercase tracking-widest font-bold mb-4">Release Candidate</p>
+                        
+                        <div class="space-y-3">
+                            <div class="text-sm text-slate-300"><strong>Definisi:</strong> "Kandidat Rilis Final". Build dinilai stabil. Jika QA tidak menemukan <em>Game Breaking Bug</em>, build yang sama ini akan jadi Official Release.</div>
+                            <div class="text-sm text-slate-300"><strong>Target:</strong> Final QA Pass.</div>
+                            <div class="text-sm text-slate-300"><strong>Contoh Tag:</strong> <code class="bg-black/50 px-1 rounded text-purple-300">v1.0.0-rc</code></div>
+                            <div class="mt-4 bg-purple-900/30 border border-purple-500/30 p-2 rounded text-xs text-purple-200 text-center">
+                                <strong>Jika menggunakan GitHub:</strong> Centang "Set as a pre-release"
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STABLE -->
+                    <div class="glass bg-white/5 p-6 rounded-xl border border-emerald-500/30 relative overflow-hidden">
+                        <h3 class="text-xl font-bold text-emerald-400 mb-1 font-mono">Tanpa Suffix</h3>
+                        <p class="text-xs text-emerald-200/50 uppercase tracking-widest font-bold mb-4">Stable / Official Release</p>
+                        
+                        <div class="space-y-3">
+                            <div class="text-sm text-slate-300"><strong>Definisi:</strong> "Production Ready". Versi stabil, sudah melewati seluruh tahap QA, dioptimasi penuh, dan siap diluncurkan secara resmi.</div>
+                            <div class="text-sm text-slate-300"><strong>Target:</strong> Publik / Klien (End-user).</div>
+                            <div class="text-sm text-slate-300"><strong>Contoh Tag:</strong> <code class="bg-black/50 px-1 rounded text-emerald-300">v1.0.0</code>, <code class="bg-black/50 px-1 rounded text-emerald-300">v2.1.3</code></div>
+                            <div class="mt-4 bg-emerald-900/30 border border-emerald-500/30 p-2 rounded text-xs text-emerald-200 text-center">
+                                <strong>Jika menggunakan GitHub:</strong> Centang "Set as the latest release"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: WORKFLOW GRAPH -->
+            <section id="view-workflow" class="view-section hide">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Alur Kerja Eksekusi Release (Workflow Graph)</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Langkah-langkah yang harus dilakukan oleh Lead Programmer / DevOps saat membuat rilis resmi di GitHub.</p>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-8 mb-8">
+                    <!-- Flowchart Graphic (No inner scrolling, auto height) -->
+                    <div class="flex-1 glass bg-white/5 py-8 px-4 rounded-xl border border-white/10 h-auto">
+                        
+                        <div class="flex flex-col items-center">
+                            
+                            <!-- Node 1 -->
+                            <div class="workflow-node w-full max-w-sm bg-slate-800/80 border border-slate-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="step1">
+                                <div class="text-[10px] text-slate-400 font-mono mb-1">Langkah 1</div>
+                                <div class="font-bold text-md text-white">Tentukan Nomor Versi</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <!-- Node 2 -->
+                            <div class="workflow-node w-full max-w-sm bg-slate-800/80 border border-slate-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="step2">
+                                <div class="text-[10px] text-slate-400 font-mono mb-1">Langkah 2</div>
+                                <div class="font-bold text-md text-white">Draft a new release di GitHub</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <!-- Node 3 & 4 (Combined for flow) -->
+                            <div class="workflow-node w-full max-w-sm bg-slate-800/80 border border-slate-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="step34">
+                                <div class="text-[10px] text-slate-400 font-mono mb-1">Langkah 3 & 4</div>
+                                <div class="font-bold text-md text-white">Buat Tag & Pastikan Target "main"</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <!-- Node 5 -->
+                            <div class="workflow-node w-full max-w-sm bg-slate-800/80 border border-slate-500 text-center p-4 rounded-lg shadow-lg mb-2 relative z-10" data-step="step5">
+                                <div class="text-[10px] text-slate-400 font-mono mb-1">Langkah 5</div>
+                                <div class="font-bold text-md text-white">Tulis Release Notes</div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <!-- Branching Point (Status) -->
+                            <div class="workflow-node w-full max-w-sm bg-cyan-900/40 border border-cyan-500 text-center p-3 rounded-lg shadow-lg mb-4 relative z-10" data-step="step6">
+                                <div class="text-[10px] text-cyan-400 font-mono mb-1">Langkah 6: Atur Status Rilis (Khusus Platform UI)</div>
+                                <div class="font-bold text-sm text-white">Apakah ini versi Pre-release atau Stable?</div>
+                            </div>
+
+                            <!-- Branching Lines -->
+                            <div class="flex justify-center w-full max-w-md relative mb-4">
+                                <div class="absolute top-0 w-[60%] h-6 border-t-2 border-l-2 border-r-2 border-slate-600 border-solid rounded-t-lg"></div>
+                            </div>
+
+                            <!-- Two Columns for Status -->
+                            <div class="flex w-full max-w-lg justify-between gap-4 mb-4">
+                                <!-- Pre-Release Path -->
+                                <div class="workflow-node flex-1 bg-amber-900/40 border border-amber-500 text-center p-3 rounded-lg shadow-lg relative z-10" data-step="step6a">
+                                    <div class="text-[10px] text-amber-400 font-mono mb-1">Jika ujungnya -alpha, -beta, -rc</div>
+                                    <div class="font-bold text-sm text-white">Centang "Set as a pre-release"</div>
+                                </div>
+
+                                <!-- Stable Path -->
+                                <div class="workflow-node flex-1 bg-emerald-900/40 border border-emerald-500 text-center p-3 rounded-lg shadow-lg relative z-10" data-step="step6b">
+                                    <div class="text-[10px] text-emerald-400 font-mono mb-1">Jika rilis Stabil (tanpa embel-embel)</div>
+                                    <div class="font-bold text-sm text-white">Centang "Set as latest release"</div>
+                                </div>
+                            </div>
+
+                            <!-- Merge Lines -->
+                            <div class="flex justify-center w-full max-w-md relative mb-4 mt-2">
+                                <div class="absolute bottom-0 w-[60%] h-6 border-b-2 border-l-2 border-r-2 border-slate-600 border-solid rounded-b-lg"></div>
+                            </div>
+                            <div class="w-0.5 h-6 bg-slate-600 mb-2"></div>
+
+                            <!-- Node 7 -->
+                            <div class="workflow-node w-full max-w-sm bg-[#5865F2]/20 border border-[#5865F2] text-center p-4 rounded-lg shadow-lg relative z-10" data-step="step7">
+                                <div class="text-[10px] text-[#5865F2] font-mono mb-1">Langkah 7</div>
+                                <div class="font-bold text-md text-white">Publish Release (Auto CI/CD Build)</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Detail Panel (Sticky) -->
+                    <div class="lg:w-1/3">
+                        <div class="glass rounded-xl p-6 shadow-lg border border-white/10 bg-white/5 sticky top-24">
+                            <h3 class="text-xs font-bold text-cyan-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Detail Langkah
+                            </h3>
+                            <div id="step-content" class="text-slate-300 min-h-[150px]">
+                                <p class="text-lg font-semibold mb-2 text-white">Menunggu Interaksi...</p>
+                                <p class="text-sm font-mono text-slate-500">> Klik salah satu kotak/modul pada diagram di samping untuk melihat penjelasan detail eksekusi rilis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: STEP-BY-STEP EXECUTION GUIDE -->
+            <section id="view-execute" class="view-section hide">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-white">Standar Alur Kerja (Daftar Lengkap)</h2>
+                    <p class="text-slate-400 mt-2 text-sm">Penjelasan mendetail mengenai langkah-langkah yang ada pada Workflow Graph.</p>
+                </div>
+                
+                <div class="glass bg-white/5 p-8 rounded-xl border border-cyan-500/20">
+                    <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                        <div class="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold">✓</div>
+                        <h3 class="text-xl font-bold text-cyan-400">Eksekusi Official Release (dari branch <code>main</code> atau <code>master</code>)</h3>
+                    </div>
+                    <ol class="space-y-6 text-sm text-slate-300 list-decimal pl-5">
+                        <li class="pl-2">
+                            <strong class="text-white text-base block mb-1">Tentukan Nomor Versi</strong>
+                            Analisis apa saja yang baru di-merge dari <code class="text-amber-300 bg-black/40 px-1 rounded">staging</code>. Apakah ini sekadar perbaikan bug (naikkan Patch), ada fitur baru (naikkan Minor), atau perombakan besar (naikkan Major)?
+                        </li>
+                        <li class="pl-2">
+                            <strong class="text-white text-base block mb-1">Draft Release</strong>
+                            Buka repository GitHub, klik tab <strong>Releases</strong>, lalu pilih <strong>Draft a new release</strong>.
+                        </li>
+                        <li class="pl-2">
+                            <strong class="text-white text-base block mb-1">Buat Tag</strong>
+                            Ketik nama tag sesuai format SemVer pada kolom "Choose a tag" (Contoh: <code class="text-emerald-300 bg-black/40 px-1 rounded">v1.0.0-beta</code>), lalu klik <em>Create new tag</em>.
+                        </li>
+                        <li class="pl-2">
+                            <strong class="text-white text-base block mb-1">Pastikan Target Branch</strong>
+                            Pastikan opsi target mengarah ke branch <code class="text-cyan-300 bg-black/40 px-1 rounded">main</code>.
+                        </li>
+                        <li class="pl-2">
+                            <strong class="text-white text-base block mb-1">Tulis Release Notes</strong>
+                            Tuliskan dengan jelas penambahan fitur atau bug apa saja yang diperbaiki di versi ini untuk memudahkan dokumentasi.
+                        </li>
+                        <li class="pl-2">
+                            <strong class="text-amber-400 text-base block mb-1">Atur Status Rilis (Contoh Implementasi GitHub)</strong>
+                            <ul class="list-disc pl-5 mt-2 space-y-2 text-slate-300">
+                                <li>Jika mem-publish di platform seperti GitHub dan ujung versinya <code class="text-rose-300">-alpha</code>, <code class="text-amber-300">-beta</code>, atau <code class="text-purple-300">-rc</code>, disarankan untuk mencentang kotak <strong>"Set as a pre-release"</strong>.</li>
+                                <li>Jika ini versi Stabil (tanpa suffix), centang kotak <strong>"Set as the latest release"</strong>.</li>
+                            </ul>
+                        </li>
+                        <li class="pl-2">
+                            <strong class="text-white text-base block mb-1">Publish Release</strong>
+                            Klik tombol hijau <strong>Publish release</strong>. Proses CI/CD Production akan otomatis berjalan di *runner* dan nantinya menempelkan file <code class="text-cyan-300">.zip</code> hasil *build* ke halaman rilis tersebut.
+                        </li>
+                    </ol>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // Top Navigation Logic
+        const navLinks = document.querySelectorAll('.nav-link');
+        const viewSections = document.querySelectorAll('.view-section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                navLinks.forEach(l => l.classList.remove('active'));
+                e.target.classList.add('active');
+                e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                const targetId = e.target.getAttribute('data-target');
+                viewSections.forEach(sec => {
+                    if(sec.id === targetId) sec.classList.remove('hide');
+                    else sec.classList.add('hide');
+                });
+            });
+        });
+
+        // Flowchart Logic Content Mapping
+        const stepData = {
+            "step1": { 
+                title: "1. Tentukan Nomor Versi", 
+                content: "Lakukan analisis terhadap kode yang masuk dari branch staging. Tentukan apakah pembaruan ini masuk kategori Major (Perombakan/Ganti arsitektur), Minor (Tambah fitur baru), atau Patch (Hanya perbaikan bug)." 
+            },
+            "step2": { 
+                title: "2. Draft a new release", 
+                content: "Masuk ke menu utama repositori GitHub Anda. Di sidebar sebelah kanan, temukan bagian 'Releases'. Klik opsi 'Draft a new release' untuk mulai membuat rilisan baru." 
+            },
+            "step34": { 
+                title: "3 & 4. Buat Tag dan Target", 
+                content: "Di kolom tag, ketik versi sesuai standar (contoh: v1.0.0-beta) dan klik 'Create new tag'. PENTING: Pada kolom Target, pastikan Anda memilih branch 'main' atau 'master' sebagai basis rilis." 
+            },
+            "step5": { 
+                title: "5. Tulis Release Notes", 
+                content: "Isi judul rilisan dan tuliskan rincian pada deskripsi. Dokumentasikan semua perubahan (Changelog), fitur yang ditambah, serta bug yang telah diperbaiki agar tim QA atau klien memahami pembaruan tersebut." 
+            },
+            "step6": { 
+                title: "6. Atur Status Rilis (Opsional / Platform Specific)", 
+                content: "Jika menggunakan GitHub atau platform serupa, sistem membedakan antara versi uji coba dan versi stabil. Pengaturan status ini penting untuk kerapian repositori dan automasi." 
+            },
+            "step6a": { 
+                title: "Status: Pre-release (GitHub)", 
+                content: "Karena nama versi memiliki akhiran -alpha, -beta, atau -rc, opsi 'Set as a pre-release' pada GitHub digunakan untuk menandakan bahwa build ini masih dalam tahap pengujian tim." 
+            },
+            "step6b": { 
+                title: "Status: Latest / Stable (GitHub)", 
+                content: "Karena rilis ini merupakan versi final dan stabil (misalnya v1.0.0 tanpa akhiran), opsi 'Set as the latest release' digunakan sebagai penanda versi publik terbaru." 
+            },
+            "step7": { 
+                title: "7. Publish Release", 
+                content: "Klik tombol hijau 'Publish release'. Setelah ditekan, sistem otomatis (CI/CD) GitHub Actions akan terpanggil, melakukan kompilasi build, dan hasil ZIP akan otomatis terunggah ke halaman ini ketika selesai." 
+            }
+        };
+
+        const workflowNodes = document.querySelectorAll('.workflow-node');
+        const detailPanel = document.getElementById('step-content');
+
+        workflowNodes.forEach(node => {
+            node.addEventListener('click', (e) => {
+                const step = e.currentTarget.getAttribute('data-step');
+                const data = stepData[step];
+                if(data) {
+                    // Reset styling for all nodes
+                    workflowNodes.forEach(n => {
+                        n.classList.remove('border-cyan-400', 'border-amber-400', 'border-emerald-400');
+                        n.style.boxShadow = 'none';
+                    });
+                    
+                    // Determine highlight color based on step
+                    let borderColor = 'border-cyan-400';
+                    if(step === 'step6a') borderColor = 'border-amber-400';
+                    if(step === 'step6b') borderColor = 'border-emerald-400';
+                    if(step === 'step7') borderColor = 'border-[#5865F2]';
+
+                    // Apply styling to clicked node
+                    e.currentTarget.classList.add(borderColor);
+                    e.currentTarget.style.boxShadow = '0 0 15px rgba(255,255,255,0.1)';
+
+                    // Update detail panel
+                    detailPanel.innerHTML = `
+                        <p class="text-lg font-bold text-white mb-2">${data.title}</p>
+                        <p class="text-sm leading-relaxed text-slate-300 bg-black/40 p-3 rounded-lg border border-white/5 font-mono shadow-inner">${data.content}</p>
+                    `;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
